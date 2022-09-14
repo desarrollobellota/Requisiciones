@@ -1,0 +1,63 @@
+import {ModuleWithProviders} from '@angular/core';
+import {Routes, RouterModule} from '@angular/router';
+
+//Importación de componentes
+import {ErrorComponent} from './auth/error/error.component';
+import {InicioComponent} from './componentes/inicio/inicio.component';
+import {RequisitorComponent} from './componentes/requisitor/FormularioCreacion/requisitor.component';
+import {AuxiliarComponent} from './componentes/auxiliar/TablaReq/auxiliar.component';
+import {AprobadorComponent} from './componentes/aprobador/TablaReqApr/aprobador.component';
+import {AprobOrdenesComponent} from './componentes/aprobador/aprob-ordenes/aprob-ordenes.component';
+import {AprobLegaComponent} from './componentes/aprobador/aprob-lega/aprob-lega.component';
+import {CadenaComponent} from './componentes/admin/CadenasAprob/cadena.component';
+import {AdminComponent} from './componentes/admin/FormularioUsuarios/admin.component';
+import {RegistroComponent} from './componentes/requisitor/TablaRegistro/registro.component';
+import {VerComponent} from './componentes/requisitor/verReq/ver/ver.component';
+import {VerOCComponent} from './componentes/aprobador/ver-oc/ver-oc.component';
+import {RequisicionComponent} from './componentes/auxiliar/Registro/requisicion.component';
+import {HistorialComponent} from './componentes/auxiliar/historial/historial.component';
+import {ModificarComponent} from './componentes/requisitor/modificar/modificar.component';
+import {LegalizacionComponent} from './componentes/requisitor/legalizacion/legalizacion.component';
+import {OrdenCompraComponent} from './componentes/auxiliar/orden-compra/orden-compra.component';
+import {AdminProvComponent} from './componentes/auxiliar/admin-prov/admin-prov.component';
+import {EnviarOCComponent} from './componentes/auxiliar/enviar-oc/enviar-oc.component';
+import { AppAuthGuard } from './auth/appAuthGuard';
+import {RecepcionocComponent} from './componentes/recepcion/recepcionoc/recepcionoc.component';
+import {HistorialocComponent} from './componentes/auxiliar/historialoc/historialoc.component';
+import {RecepcionordencompraComponent} from './componentes/recepcion/recepcionordencompra/recepcionordencompra.component';
+import { CadenaLegaliComponent } from './componentes/requisitor/legalizacion/admin/CadenasLegali/cadena-legali.component';
+
+//Definición de rutas por componentes
+const appRoutes: Routes = [
+    {path: '', canActivate: [AppAuthGuard],component: InicioComponent},
+    {path: 'logout',  component: InicioComponent},
+    {path: 'inicio',component: InicioComponent},
+    {path: 'crear/requisicion', canActivate: [AppAuthGuard],data: { roles: ['Requisitor'] }, component: RequisitorComponent},
+    {path: 'crear/legalizacion', canActivate: [AppAuthGuard],data: { roles: ['Requisitor'] }, component: LegalizacionComponent},
+    {path: 'registro', canActivate: [AppAuthGuard],data: { roles: ['Requisitor'] }, component: RegistroComponent},
+    {path: 'legalizacion', canActivate: [AppAuthGuard],data: {roles: ['Legalizador']}, component: LegalizacionComponent},
+    {path: 'cotizar', canActivate: [AppAuthGuard],data: { roles: ['Comprador'] }, component: AuxiliarComponent},
+    {path: 'requisiciones', canActivate: [AppAuthGuard],data: { roles: ['Comprador'] }, component: RequisicionComponent},
+    {path: 'historial', canActivate: [AppAuthGuard],data: { roles: ['Requisitor'] }, component: HistorialComponent},
+    {path: 'ordenCompra', canActivate: [AppAuthGuard],data: { roles: ['Comprador'] }, component: OrdenCompraComponent},
+    {path: 'adminProv', canActivate: [AppAuthGuard],data: { roles: ['Comprador'] }, component: AdminProvComponent},
+    {path: 'correoProv', canActivate: [AppAuthGuard],data: { roles: ['Comprador'] }, component: EnviarOCComponent},
+    {path: 'aprobar', canActivate: [AppAuthGuard],data: { roles: ['Aprobador'] }, component: AprobadorComponent},
+    {path: 'aprobarLega', canActivate: [AppAuthGuard],data: { roles: ['Legalizador'] }, component: AprobLegaComponent},
+    {path: 'aprobarOC', canActivate: [AppAuthGuard],data: { roles: ['Aprobador'] }, component: AprobOrdenesComponent},
+    {path: 'adminReq', canActivate: [AppAuthGuard],data: { roles: ['administrador'] }, component: AdminComponent},
+    {path: 'admin', canActivate: [AppAuthGuard],data: { roles: ['administrador'] }, component: CadenaComponent},
+    {path: 'admin/legalizacion', canActivate: [AppAuthGuard],data: { roles: ['administrador'] }, component: CadenaLegaliComponent}, //AdminLegalizacion
+    {path: 'ver/:id', canActivate: [AppAuthGuard], component:VerComponent},
+    {path: 'verOC/:id', canActivate: [AppAuthGuard], component:VerOCComponent},
+    {path: 'modificar/:id', canActivate: [AppAuthGuard], component:ModificarComponent},
+    {path: 'recepcionoc',canActivate: [AppAuthGuard],data: { roles: ['Receptor'] },component:RecepcionocComponent},
+    {path: 'historialoc',canActivate: [AppAuthGuard],component:HistorialocComponent},
+    {path: 'recepcionordencompra',canActivate:[AppAuthGuard],data:{ roles: ['Receptor']},component:RecepcionordencompraComponent},
+    {path: 'error', component:ErrorComponent},
+    {path: '**', component: InicioComponent},
+]; 
+
+export const appRoutingProviders: any[] = [];
+
+export const routing: ModuleWithProviders = RouterModule.forRoot(appRoutes);

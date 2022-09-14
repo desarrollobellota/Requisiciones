@@ -1,0 +1,15 @@
+.body{
+margin: 3%;
+}
+
+.encabezado{
+font-size: 20px;
+font-weight: bolder;
+}
+
+.texto{
+    font-size: 18px;
+}
+ .centro{
+     text-align: center;
+ }

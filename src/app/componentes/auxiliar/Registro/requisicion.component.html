@@ -1,0 +1,64 @@
+<div class="container">
+    <div  class="card">
+      <h3 class="card-header text-center">Auditoría Requisiciones</h3>
+      <div class="card-body">
+  
+                <!--   TABLA PARA VISUALIZAR REQUISICIONES     -->
+      <div id="table" class="table-editable">
+        <p class="centro">En esta tabla puede consultar todas las requisiciones
+          creadas en el sistema. </p>
+        <p-table #dt [value]="requisiciones" selectionMode="single" [paginator]="true" [rows]="10"  [responsive]="true"
+        [globalFilterFields]="['idReq','estado', 'idReqLx','numeroOrdenCompra', 'nombreRequisitor', 'idAprobador','estado']" [rowsPerPageOptions]="[10,25,50,100]" >
+          <ng-template pTemplate="caption">
+            <div class="p-grid" >
+              <div class="p-col-12" style="text-align: right">        
+                <i class="pi pi-search" style="margin:4px 4px 0 0"></i>
+                <input type="text" pInputText size="30" (input)="dt.filterGlobal($event.target.value, 'contains')" style="width:auto">
+              </div>
+              </div>
+        </ng-template>
+          <ng-template pTemplate="header">
+                <tr class="centro">
+                    <th>Número Requisición</th>
+                    <th>Número LX</th>
+                    <th>Número OC</th>
+                    <th>Fecha Creación</th>
+                    <th>Requisitor</th>
+                    <th>Cotizado por:</th>
+                    <th>Aprobador:</th>
+                    <th>Estado</th>    
+                    <th>Detalle</th>
+                </tr> 
+            </ng-template>
+            <ng-template pTemplate="body"  let-requisiciones>
+                <tr class="centro">
+                    <td><span class="ui-column-title">NúmeroReq</span>
+                        {{requisiciones.idReq}}</td>
+                    <td><span class="ui-column-title">NúmeroLX</span>
+                      {{requisiciones.idReqLx}}</td>
+                    <td><span class="ui-column-title">NúmeroOC</span>
+                      {{requisiciones.numeroOrdenCompra}}</td>
+                    <td><span class="ui-column-title">FechaCreación</span>
+                        {{requisiciones.fechaCreacion.toString().substring(0, 10)}}</td> 
+                    <td><span class="ui-column-title">Requisitor</span>
+                        {{requisiciones.nombreRequisitor}}</td>
+                    <td><span class="ui-column-title">Cotizado por:</span>
+                          {{requisiciones.idComprador}}</td>
+                    <td><span class="ui-column-title">Aprobador</span>
+                        {{requisiciones.idAprobador}}</td>
+                    <td><span class="ui-column-title">Estado</span>
+                        {{requisiciones.estado}}</td>
+                    <td><span class="ui-column-title">Detalle</span>
+                        <button type="button" size="sm" class="botonVer" (click)="open(requisiciones)" >VER</button></td>
+                </tr>
+            </ng-template>
+           
+        </p-table>
+  
+      </div>
+      </div> 
+    </div>
+  </div>
+  <p-dialog [style]="{width: '9vw'}" [(visible)]="cargando" [closable]="false" [showHeader]="false" [resizable]="false"
+  [draggable]="false" [keepInViewport]="false" [autoZIndex]="false" [modal]="true"> 
+  <p-progressSpinner class="load"></p-progressSpinner></p-dialog>

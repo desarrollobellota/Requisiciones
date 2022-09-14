@@ -1,0 +1,44 @@
+.content{
+  display: flex;
+  flex-direction: row;
+}
+
+.titulo{
+  color: #333;
+  text-align: center;
+  padding-left: 4%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-bottom: 11%;
+}
+
+h2 {
+  font-family: "BarlowCondensed-Semibold";
+  margin-bottom: 13px;
+  border-bottom: 1px solid lightgrey;
+  padding-bottom: 12px;
+  font-weight: bolder;
+}
+
+.user {
+  font-size: 20px;
+  font-family: "Roboto-Regular";
+  cursor: pointer;
+}
+
+.user:hover {
+  font-weight: bolder;
+}
+
+.user_and_imgs {
+  display: flex;
+  flex-direction: column;
+}
+
+.img-fluid {
+  width: 1000px;
+  align-self: center;
+}
+
+

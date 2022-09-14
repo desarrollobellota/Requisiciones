@@ -1,0 +1,119 @@
+
+import {NgModule, APP_INITIALIZER } from '@angular/core';
+import {APP_BASE_HREF} from '@angular/common';
+import {routing, appRoutingProviders} from './app.routing';
+import {AppRoutingModule } from './app-routing.module';
+import {HttpClientModule} from '@angular/common/http';
+import {MultiSelectModule} from 'primeng/multiselect';
+import {BrowserModule} from '@angular/platform-browser';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {FormsModule } from '@angular/forms';
+import {DialogModule} from 'primeng/dialog';
+import {ButtonModule} from 'primeng/button';
+import {TableModule} from 'primeng/table';
+import {AutoCompleteModule} from 'primeng/autocomplete';
+import {DropdownModule} from 'primeng/dropdown';
+import {InputTextareaModule} from 'primeng/inputtextarea';
+import {InputSwitchModule} from 'primeng/inputswitch';
+import {InputTextModule} from 'primeng/inputtext';
+import {CalendarModule} from 'primeng/calendar';
+import {SidebarModule} from 'primeng/sidebar';
+import {ProgressSpinnerModule} from 'primeng/progressspinner';
+import {KeycloakService, KeycloakAngularModule } from 'keycloak-angular';
+import {initializer } from './auth/app-init';
+
+import {PanelMenuModule} from 'primeng/panelmenu';
+ 
+import { AppComponent } from './app.component';
+import { AprobadorComponent } from './componentes/aprobador/TablaReqApr/aprobador.component';
+import { AuxiliarComponent } from './componentes/auxiliar/TablaReq/auxiliar.component';
+import { RequisitorComponent } from './componentes/requisitor/FormularioCreacion/requisitor.component';
+import { RegistroComponent }  from './componentes/requisitor/TablaRegistro/registro.component';
+import { VerComponent } from './componentes/requisitor/verReq/ver/ver.component';
+import { CadenaComponent } from './componentes/admin/CadenasAprob/cadena.component';
+import { AdminComponent } from './componentes/admin/FormularioUsuarios/admin.component';
+import { InicioComponent } from './componentes/inicio/inicio.component';
+import { ErrorComponent } from './auth/error/error.component';
+import { RequisicionComponent } from './componentes/auxiliar/Registro/requisicion.component';
+import { HistorialComponent } from './componentes/auxiliar//historial/historial.component';
+import { ModificarComponent } from './componentes/requisitor/modificar/modificar.component';
+import { LegalizacionComponent } from './componentes/requisitor/legalizacion/legalizacion.component';
+import { AprobLegaComponent } from './componentes/aprobador/aprob-lega/aprob-lega.component';
+import { AprobOrdenesComponent } from './componentes/aprobador/aprob-ordenes/aprob-ordenes.component';
+import { VerOCComponent } from './componentes/aprobador/ver-oc/ver-oc.component';
+import { OrdenCompraComponent } from './componentes/auxiliar/orden-compra/orden-compra.component';
+import { AdminProvComponent } from './componentes/auxiliar/admin-prov/admin-prov.component';
+import { EnviarOCComponent } from './componentes/auxiliar/enviar-oc/enviar-oc.component';
+import { RecepcionocComponent } from './componentes/recepcion/recepcionoc/recepcionoc.component';
+import { HistorialocComponent } from './componentes/auxiliar/historialoc/historialoc.component';
+import { RecepcionordencompraComponent } from './componentes/recepcion/recepcionordencompra/recepcionordencompra.component';
+import { CadenaLegaliComponent } from './componentes/requisitor/legalizacion/admin/CadenasLegali/cadena-legali.component';
+
+
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    AprobadorComponent,
+    AuxiliarComponent,
+    RequisitorComponent,
+    RegistroComponent,
+    VerComponent,
+    CadenaComponent,
+    CadenaLegaliComponent, //AdminLegalizacion
+    InicioComponent,
+    ErrorComponent,
+    RequisicionComponent,
+    HistorialComponent,
+    ModificarComponent,
+    LegalizacionComponent,
+    AprobLegaComponent,
+    AprobOrdenesComponent,
+    VerOCComponent,
+    OrdenCompraComponent,
+    AdminProvComponent,
+    AdminComponent,
+    EnviarOCComponent,
+    RecepcionocComponent,
+    HistorialocComponent,
+    RecepcionordencompraComponent,
+    
+  ],
+  imports: [
+    BrowserModule,
+    HttpClientModule,
+    AppRoutingModule,
+    routing,
+    MultiSelectModule,
+    FormsModule,
+    BrowserAnimationsModule,
+    DialogModule,
+    ButtonModule,
+    TableModule,
+    AutoCompleteModule,
+    DropdownModule,
+    InputTextareaModule,
+    InputSwitchModule,
+    InputTextModule,
+    CalendarModule,
+    SidebarModule,
+    ProgressSpinnerModule,
+    KeycloakAngularModule,
+    PanelMenuModule
+   
+  ],
+  providers: [
+    appRoutingProviders,
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializer,
+      multi: true,
+      deps: [KeycloakService]
+    },
+    {
+      provide: APP_BASE_HREF, 
+      useValue: '/compras'
+    }],
+  bootstrap: [AppComponent]
+})
+export class AppModule { } 

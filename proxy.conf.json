@@ -1,0 +1,17 @@
+{
+
+    "/RestLXCompras/webresources/*": {
+        "target": "http://213.62.216.84:10013",
+        "secure": false,
+        "ChangeOrigin": true,
+        "logLevel": "debug"
+    },
+
+    "/compras/webresources/*": {
+        "target": "http://192.168.40.14:8080",
+        "secure": false,
+        "ChangeOrigin": true,
+        "logLevel": "debug"
+    }
+
+}

@@ -1,0 +1,107 @@
+<div class="container">
+    <div class="card">
+    <h2 class="card-header text-center">Ordenes de compra pendientes por aprobar o rechazar</h2><br>
+  <h6 class="centro">Seleccione la OC que desea aprobar o rechazar y haga clic en en su respectivo botón</h6><br>
+    <p-table #tabla [value]="ordenesCompra" selectionMode="single" [(selection)]="ocSelect" [paginator]="true" [rows]="5"  [responsive]="true" 
+    [globalFilterFields]="['numeroOrdenCompra','numeroRequisicion', 'usuarioCambio', 'valorAnterior', 'nuevoValor']" [rowsPerPageOptions]="[10,25,50,100]" >
+        <ng-template pTemplate="caption">
+            <div style="text-align: right">        
+                <i class="pi pi-search" style="margin:4px 4px 0 0;"></i>
+                <input type="text" pInputText size="30" (input)="tabla.filterGlobal($event.target.value, 'contains')" style="width:auto">
+            </div>
+        </ng-template>
+        <ng-template pTemplate="header" >
+            <tr class="centro">
+                <th>Rechazar</th>
+                <th>Aprobar</th>
+                <th>Número OC</th>
+                <th>Número REQ</th>
+                <th>Valor Anterior</th>
+                <th>Valor Actual</th>
+                <th>Moneda</th>
+                <th>Modificado por</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body"  let-oc>
+            <tr class="centro">
+                <td><span class="ui-column-title">Rechazar</span>
+                    <button pButton type="reset"  icon="pi pi-times" (click)="confirmarRech(oc)" class="button1" ></button></td>
+                <td><span class="ui-column-title">Aprobar</span>
+                    <button pButton type="reset" icon="pi pi-check" (click)="confirmarAproba(oc)" class="button1" ></button></td>
+                <td><span class="ui-column-title">Id OC</span>
+                    {{oc.numeroOrdenCompra}}</td>
+                <td><span class="ui-column-title">Id REQ</span>
+                    {{oc.numeroRequisicion}}</td>
+                <td><span class="ui-column-title">Valor Anterior</span>
+                    {{oc.valorAnterior| number:'1.0':'en-US'}}</td>
+                <td><span class="ui-column-title">Valor Actual</span>
+                    {{oc.nuevoValor| number:'1.0':'en-US'}}</td>
+                <td><span class="ui-column-title">Moneda</span>
+                        {{oc.moneda}}</td>    
+                <td><span class="ui-column-title">Modificado por</span>
+                    {{oc.usuarioCambio}}</td>
+                <td><button type="button" size="sm" class="botonVer" (click)="verOC(oc)" >VER OC</button></td>
+                <td [ngSwitch]="oc.numeroRequisicion">
+                    <span *ngIf="oc.numeroRequisicion > 0">
+                        <button type="button" size="sm" class="botonVer" (click)="verReq(oc)" >VER REQ</button>
+                    </span>    
+                </td>
+            </tr>
+        </ng-template>
+    </p-table><br> 
+</div>
+
+
+  <p-dialog [(visible)]="Modal_aprobada" [modal]="true" [style]="{width: '50vw'}" [maximizable]="true" [baseZIndex]="10000"
+  [draggable]="false" [resizable]="false">
+  <p class="texto"> {{this.aprobador}}</p>
+      <p-footer>
+          <button type="button" class="button1" (click)="Modal_aprobada=false">Cerrar</button>
+      </p-footer>     
+</p-dialog>
+
+
+<p-dialog [(visible)]="Modal_rechazada" [modal]="true" [style]="{width: '50vw'}" [maximizable]="true" [baseZIndex]="10000"
+  [draggable]="false" [resizable]="false">
+  <p class="texto">Orden de Compra Rechazada con éxito</p>
+      <p-footer>
+          <button type="button" class="button1" (click)="Modal_rechazada=false">Cerrar</button>
+      </p-footer>     
+</p-dialog>  
+
+<p-dialog [(visible)]="confirmarRechazo" [modal]="true" [style]="{width: '50vw'}" [maximizable]="true" [baseZIndex]="10000"
+  [draggable]="false" [resizable]="false">
+  <p class="texto">Seguro que desea RECHAZAR la orden de compra número: {{ordenSeleccionada.numeroOrdenCompra}}</p>
+  <label>Motivo Rechazo:</label>
+      <input pInputText name="motivo" #motivo="ngModel" [(ngModel)]="ordenSeleccionada.observacion">
+      <p-footer>
+          <button type="button" class="button1" (click)="confirmarRechazo=false">CANCELAR</button>
+          <button type="button" class="button1" [disabled]="desactivar" (click)="rechazar_oc(); desactivar=true">CONFIRMAR</button>
+      </p-footer>     
+</p-dialog> 
+
+<p-dialog [(visible)]="confirmarAprob" [modal]="true" [style]="{width: '50vw'}" [maximizable]="true" [baseZIndex]="10000"
+  [draggable]="false" [resizable]="false">
+  <p class="texto">Seguro que desea APROBAR la orden de compra número: {{ordenSeleccionada.numeroOrdenCompra}}</p>
+  <p-progressSpinner *ngIf="cargando" class="load" ></p-progressSpinner>
+      <p-footer>
+          <button  class="button1" (click)="confirmarAprob=false">CANCELAR</button>
+          <button  class="button1" [disabled]="desactivar" (click)="aprobar_oc(); desactivar=true">CONFIRMAR</button>
+      </p-footer>     
+</p-dialog> 
+
+<p-dialog [(visible)]="error" [modal]="true" [style]="{width: '50vw'}" [maximizable]="true" [baseZIndex]="10000"
+  [draggable]="false" [resizable]="false">
+  <p class="texto"> {{Error}}</p>
+      <p-footer>
+          <button type="button" class="button1" (click)="Modal_rechazada=false">Cerrar</button>
+      </p-footer>     
+</p-dialog> 
+  </div>
+  <p-dialog [style]="{width: '10vw'}" [(visible)]="cargando" [closable]="false" [showHeader]="false" [resizable]="false"
+  [draggable]="false" [keepInViewport]="false" [autoZIndex]="false" [modal]="true"> 
+  <p-progressSpinner class="load"></p-progressSpinner></p-dialog>
+
+

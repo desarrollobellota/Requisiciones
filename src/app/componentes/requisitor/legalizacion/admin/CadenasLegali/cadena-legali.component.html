@@ -1,0 +1,214 @@
+<div class="container">
+  <div class="card">
+        <h2 class="card-header text-center">Administración de cadenas de aprobación de legalizaciones</h2>
+        <br><div class="row estiloDiv">
+          <h4>Salario mínimo actual: $ {{sm.smlv | number:'1.0':'en-US'}}</h4>
+        </div><br>
+        <div class="estiloDiv">
+          <button type="submit" class="button1" (click)="updateSMLV=true;">Actualizar SMLV</button><br>
+        </div><br>
+          <p-table #tabla [value]="cadenas" [responsive]="true" selectionMode="single"  [paginator]="true" [rows]="5"
+          [globalFilterFields]="['id','idAprobador', 'nombreAprobador', 'montoAprobacion', 'area']" [rowsPerPageOptions]="[5,10,20,50]" >
+            <ng-template pTemplate="caption">
+              <div style="text-align: right">      
+                  <i class="pi pi-search" style="margin:4px 4px 0 0;"></i>
+                  <input type="text" pInputText size="30" (input)="tabla.filterGlobal($event.target.value, 'contains')" style="width:auto">
+              </div>
+          </ng-template>
+            <ng-template pTemplate="header">
+                <tr style="text-align: center;"> 
+                    <th>Área</th>
+                    <th>Secuencia</th>
+                    <th>Aprobador</th>
+                    <th>Monto en SMLV</th>
+                    <th>Monto en pesos</th>
+                    <th>Estado</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body"  let-cad >
+                <tr style="text-align: center;">
+                    <td><span class="ui-column-title">Área</span>
+                      <label> {{cad.area}}</label>
+                    </td>
+
+                    <td pEditableColumn><span class="ui-column-title">Secuencia</span>
+                      <p-cellEditor>
+                        <ng-template pTemplate="input">
+                          <input pInputText type="number" name="sec" #sec="ngModel" [(ngModel)]="cad.numeroSecuencia">
+                        </ng-template>
+                        <ng-template pTemplate="output">
+                          <label> {{cad.numeroSecuencia}}</label>
+                        </ng-template>
+                      </p-cellEditor>
+                    </td>
+
+                    <td><span class="ui-column-title">Aprobador</span>
+                      <label> {{cad.nombreAprobador}}</label>
+                    </td> 
+
+                    <td pEditableColumn><span class="ui-column-title">Monto smlv</span>
+                      <p-cellEditor>
+                        <ng-template pTemplate="input">
+                          <input pInputText type="number" name="mon" #mon="ngModel" [(ngModel)]="cad.montoAprobacion">
+                        </ng-template>
+                        <ng-template pTemplate="output">
+                          <label> {{cad.montoAprobacion}}</label>
+                        </ng-template>
+                      </p-cellEditor>
+                    </td>
+
+                    <td><span class="ui-column-title">Monto pesos</span>
+                       {{cad.montoAprobacion*sm.smlv | number:'1.0':'en-US'}} </td>
+
+                    <td [ngSwitch]="cad.estado">
+                      <span *ngSwitchCase=true>
+                        <span class="ui-column-title">Activa</span>
+                      <label> Cadena activa</label>
+                    </span>
+
+                    <span *ngSwitchCase=false>
+                      <span class="ui-column-title">Inactiva</span>
+                      <label> Cadena inactiva</label>
+                    </span>
+                    </td>
+
+                    <td [ngSwitch]="cad.estado">
+                      <span *ngSwitchCase=true>
+                      <button class="botonVer" (click)="confirmarCadena(cad, false);confirmarI=true;">Desactivar</button>
+                    </span>
+
+                    <span *ngSwitchCase=false>
+                      <button class="botonVer" (click)="confirmarCadena(cad, true);confirmarA=true">Activar</button>
+                    </span>
+                    </td>
+                      
+                    <td>
+                      <button class="button1" (click)="modificarCadena(cad);">Modificar</button>
+                    </td>
+                </tr>
+            </ng-template>
+
+          </p-table><br>
+          <div class="estiloDiv">
+            <button class="button1" (click)="newCadena=true;">Añadir Cadena</button><br>
+          </div><br><br>
+  </div>
+
+  <p-dialog header="Nueva Cadena" [(visible)]="newCadena" [responsive]="true" showEffect="fade" [modal]="true">
+    <form>
+      <div class="p-grid">
+        <div class="p-col-12 p-md-6 p-lg-6">
+          <label>Área</label><br>
+          <input type="text" name="area" #area="ngModel" [(ngModel)]="cadena.area">
+        </div>
+        <div class="p-col-12 p-md-6 p-lg-6">
+          <label>Nombre Usuario</label><br>
+          <input type="text" name="name" #name="ngModel" [(ngModel)]="cadena.idAprobador">
+        </div>
+      </div>
+
+      <div class="p-grid">
+        <div class="p-col-12 p-md-6 p-lg-6">
+          <label>Secuencia</label><br>
+          <input type="number" name="sec" #sec="ngModel" [(ngModel)]="cadena.numeroSecuencia">
+        </div>
+        <div class="p-col-12 p-md-6 p-lg-6">
+          <label>Monto SMLV</label><br>
+          <input type="number" name="monto" #monto="ngModel" [(ngModel)]="cadena.montoAprobacion">
+        </div>
+      </div>
+      <button class="button1" type="submit" (click)="anadirCadena(cadena)">Crear</button>
+    </form>
+  </p-dialog>
+
+  <p-dialog header="Nuevo Comprador" [(visible)]="newComprador" [responsive]="true" showEffect="fade" [modal]="true">
+    <form>
+      <div>
+        <label>Nombre Usuario</label><br>
+        <input type="text" name="name" #name="ngModel" [(ngModel)]="comprador.nombreUsuario"><br>
+        <label>Correo</label><br>
+        <input type="text" name="correo" #name="ngModel" [(ngModel)]="comprador.correo"><br><br>
+        <button class="button1" (click)="anadirComprador(comprador)">Crear</button>
+      </div>
+    </form>
+  </p-dialog>
+
+  <p-dialog header="Modificar cadena" [(visible)]="confirmarI" [responsive]="true" showEffect="fade" [modal]="true" [style]="{width: '50vw'}">
+    ¿ Seguro que desea INACTIVAR la cadena del usuario: {{idCad.nombreAprobador}}
+    del área: {{idCad.area}} ?
+    <p-footer>
+      <div class="ui-dialog-buttonpane ui-helper-clearfix">
+        <button class="button1" (click)="estadoCadena(); confirmarI=false">Modificar</button>
+        <button class="button1" (click)="confirmarI=false">CANCELAR</button>
+      </div>
+    </p-footer>
+  </p-dialog>
+
+  <p-dialog header="Modificar cadena" [(visible)]="confirmarA" [responsive]="true" showEffect="fade" [modal]="true" [style]="{width: '50vw'}">
+    ¿ Seguro que desea ACTIVAR la cadena del usuario: {{idCad.nombreAprobador}}
+    del área: {{idCad.area}} ?
+    <p-footer>
+      <div class="ui-dialog-buttonpane ui-helper-clearfix">
+        <button  class="button1" (click)="estadoCadena(); confirmarA=false">Modificar</button>
+        <button  class="button1" (click)="confirmarA=false">CANCELAR</button>
+      </div>
+    </p-footer>
+  </p-dialog>
+
+  <p-dialog header="Cadena Modificada" [(visible)]="inactivo" [responsive]="true" showEffect="fade" [modal]="true" [style]="{width: '50vw'}">
+      Cadena modificada con éxito
+  </p-dialog>
+
+  <p-dialog header="Actualizar SMLV" [(visible)]="updateSMLV" [responsive]="true" showEffect="fade" [modal]="true">
+  <div class="ui-fluid">
+    <form #formPro="ngForm" class="card-body">
+      <div class="p-grid estiloDiv">
+        <div class="p-col-12">
+          <label for="ano">Año para el nuevo SMLV * 
+            <span *ngIf="!ano.valid && ano.touched" class="danger">Digite el año</span>
+          </label><br>
+          <input type="text" name="ano" #ano="ngModel" [(ngModel)]="newSMLV.ano">
+        </div>
+      </div><br>
+      <div class="p-grid estiloDiv">
+      <div class="p-col-12">
+        <label for="valor">Nuevo SMLV * 
+          <span *ngIf="!valor.valid && valor.touched" class="danger">Digite el nuevo SMLV</span>
+        </label><br>
+        <input type="text" name="valor" #valor="ngModel" [(ngModel)]="newSMLV.smlv">
+      </div>
+    </div><br>
+    <div class="estiloDiv">
+      <button type="submit" class="button1" (click)="modificarSMLV(newSMLV)">Actualizar</button>
+    </div><br>
+    </form>
+  </div>
+  </p-dialog>
+
+  <p-dialog header="Borrar comprador" [(visible)]="confComI" [responsive]="true" showEffect="fade" [modal]="true" [style]="{width: '50vw'}">
+    ¿ Seguro que desea BORRAR el usuario: {{comprador.nombreUsuario}} ?
+    <p-footer>
+      <div class="ui-dialog-buttonpane ui-helper-clearfix">
+        <button class="button1" (click)="estadoCompras(); confComI=false">ELIMINAR</button>
+        <button class="button1" (click)="confComI=false">CANCELAR</button>
+      </div>
+    </p-footer>
+  </p-dialog>
+
+  <p-dialog header="Salario Modificado" [(visible)]="exito" [responsive]="true" showEffect="fade" [modal]="true">
+   <h3> El nuevo SMLV es: {{newSMLV.smlv | number:'1.0':'en-US'}}</h3>
+    <button class="button1" (click)="exito=false">Aceptar</button>
+  </p-dialog>
+
+  <p-dialog header="Cadena creada" [(visible)]="cadenacreada" [responsive]="true" showEffect="fade" [modal]="true">
+    <h3>Cadena creada con éxito</h3>
+    <button class="button1" (click)="cadenacreada=false">Salir</button>
+  </p-dialog>
+
+  <p-dialog header="Comprador creado" [(visible)]="compradorCreado" [responsive]="true" showEffect="fade" [modal]="true">
+    <h3>Comprador creado con éxito</h3>
+    <button class="button1" (click)="compradorCreado=false">Salir</button>
+  </p-dialog>
+</div>

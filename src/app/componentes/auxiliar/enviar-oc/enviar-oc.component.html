@@ -1,0 +1,79 @@
+<div class="container">
+    <div class="card"><h2 class="card-header text-center">Ordenes de compra pendientes por enviar al proveedor</h2> <br>
+    <p-table #tabla [value]="ordenes" selectionMode="single" [(selection)]="ordenesSelect" [paginator]="true" [rows]="5"  [responsive]="true" 
+    [globalFilterFields]="['numeroOrdenCompra','idProveedor', 'nombreProveedor', 'correo']" [rowsPerPageOptions]="[10,25,50,100]" >
+        <ng-template pTemplate="caption">
+            <div style="text-align: right">        
+                <i class="pi pi-search" style="margin:4px 4px 0 0;"></i>
+                <input type="text" pInputText size="30" (input)="tabla.filterGlobal($event.target.value, 'contains')" style="width:auto">
+            </div>
+        </ng-template>
+        <ng-template pTemplate="header" >
+            <tr class="centro">
+                <th style="width: 5%;"> <p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+                <th style="width: 15%;">Número OC</th>
+                <th style="width: 15%;">Código Prov</th>
+                <th>Nombre Prov</th>
+                <th style="width: 25%;">Correo</th>
+                <th style="width: 10%;">Ver Orden</th>
+                <th style="width: 10%;">NO ENVIAR</th> 
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body"  let-oc>
+            <tr class="centro">
+                <td> <p-tableCheckbox [value]="oc"></p-tableCheckbox></td>
+                <td><span class="ui-column-title">Id OC</span>
+                    {{oc.numeroOrdenCompra}}</td>
+                <td><span class="ui-column-title">IdProv</span>
+                    {{oc.idProveedor}}</td>
+                <td><span class="ui-column-title">NombreProv</span>
+                    {{oc.nombreProveedor}}</td>
+                <td><span class="ui-column-title">Correo</span>
+                    {{oc.correo}}</td>
+                <td><button type="button" size="sm" class="botonVer" (click)="verOC(oc)" >VER OC</button></td>
+                <td><button type="button" size="sm" class="botonVer" (click)="noEnviar(oc)">X   </button></td> 
+            </tr>
+        </ng-template>
+        
+    </p-table><br> 
+    <div class="ui-g-12 ui-md-10" style="padding-left: 45%;">
+        <button type="button" size="sm" class="button1" (click)="pedirContra=true">ENVIAR</button>
+    </div>
+</div>
+
+
+ <p-dialog [(visible)]="pedirContra" [modal]="true" [style]="{width: '50vw'}" [maximizable]="true" [baseZIndex]="10000"
+  [draggable]="false" [resizable]="false">
+  <label>Contraseña</label><br>
+  <input type="password" name="cont" #cont="ngModel"  [(ngModel)]="contrasena">
+      <p-footer>
+          <button type="button" class="button1" (click)="enviarCorreo(ordenesSelect);pedirContra=false">Aceptar</button>
+      </p-footer>     
+</p-dialog>
+
+<p-dialog [(visible)]="respuesta" [modal]="true" [style]="{width: '30vw'}" [maximizable]="true" [baseZIndex]="10000"
+[draggable]="false" [resizable]="false">
+<label>{{res}}</label>
+
+    <p-footer>
+        <button type="button" class="button1" (click)="respuesta=false">Aceptar</button>
+    </p-footer>     
+</p-dialog>
+
+ <p-dialog [(visible)]="noEnvio" [modal]="true" [style]="{width: '30vw'}" [maximizable]="true" [baseZIndex]="10000"
+[draggable]="false" [resizable]="false">
+<label>¿Seguro que NO quiere enviar la orden de compra número: {{ocSelect.numeroOrdenCompra}} a ningún proveedor?</label>
+
+    <p-footer>
+        <button type="button" class="button1" (click)="wsOCEnviada(ocSelect);noEnvio=false">Aceptar</button>
+        <button type="button" class="button1" (click)="noEnvio=false">Cancelar</button>
+    </p-footer>     
+</p-dialog> 
+
+  </div>
+  <p-dialog [style]="{width: '10vw'}" [(visible)]="cargando" [closable]="false" [showHeader]="false" [resizable]="false"
+  [draggable]="false" [keepInViewport]="false" [autoZIndex]="false" [modal]="true"> 
+  <p-progressSpinner class="load"></p-progressSpinner></p-dialog>
+
+
+

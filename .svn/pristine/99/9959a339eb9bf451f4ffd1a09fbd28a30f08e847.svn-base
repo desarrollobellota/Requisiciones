@@ -1,0 +1,220 @@
+import { Component, OnInit } from '@angular/core';
+import { Usuario } from '../../../interface/usuario';
+import { KeycloakService } from 'keycloak-angular';
+import { RecepcionOC } from '../../../interface/recepcionoc';
+import { ProductoService } from '../../../services/productoD/productoD.service';
+import { ProductoD } from '../../../interface/productoD';
+import { orden } from '../../../interface/orden';
+import { OrdenService } from '../../../services/orden/orden.service';
+import { AlmacenService } from '../../../services/almacen/almacen.service';
+import { Almacen } from '../../../interface/almacen';
+import { UbicacionService } from '../../../services/ubicacion/ubicacion.service';
+import { Ubicacion } from '../../../interface/ubicacion';
+import { RecepcionService } from '../../../services/recepcion/recepcion.service';
+import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
+
+@Component({
+  selector: 'app-recepcionoc',
+  templateUrl: './recepcionoc.component.html',
+  styleUrls: ['./recepcionoc.component.css']
+})
+export class RecepcionocComponent implements OnInit {
+
+  public fechaCreacion;
+  public fechaCr: Date;
+  public usuario: Usuario;
+  public tipoProducto: Array<string>;
+  public transaccion: Array<string>;
+  public cod: string;
+  public recepcion: RecepcionOC;
+
+  public nomProd: Array<ProductoD>;
+  public productoSeleccionado: ProductoD;
+  public productoD: ProductoD;
+
+  ordenesDialog: boolean; //Modal ordenes del producto
+  cargando: boolean;
+
+  public orden: orden;
+  public ordenes: Array<orden>;
+  public ordenesSeleccionadas: Array<orden>;
+  clonedProducts: { [s: string]: orden; } = {};
+  public orden2: orden;//arreglo utilizado para la edición de la tupla de ordenes pendientes
+
+  public almacenSeleccionado: any;
+  public nomAlmc: Array<Almacen>;
+  almacenDialog: boolean;
+
+  public ubicacionSeleccionada: any;
+  public nomUbic: Array<Ubicacion>;
+  ubicacionDialog: boolean;
+
+  public cantidadTotal: number;
+
+  constructor(
+    private keykloak: KeycloakService,
+    private productoDService: ProductoService,
+    private ordenService: OrdenService,
+    private almacenService: AlmacenService,
+    private ubicacionService: UbicacionService,
+    private recepcionService: RecepcionService
+  ) {
+    this.usuario = new Usuario(this.keykloak);
+    this.fechaCr = new Date();
+    this.fechaCreacion = this.fechaCr.getFullYear() + '-' + (this.fechaCr.getMonth() + 1) + '-' + this.fechaCr.getDate();
+  }
+
+  ngOnInit(): void {
+    this.recepcion = new RecepcionOC();
+    this.cantidadTotal = 0;
+  }
+
+  filtroProd(event) {
+    let query = event.query;
+    this.productoDService.getDinamico(query).subscribe((todo) => {
+      this.nomProd = todo;
+    }, error => {
+      console.log(error);
+      alert('No hay conexión, error al mostrar productos');
+    })
+  }
+
+  seleccionarTipoProd() {
+    if (this.productoSeleccionado != null && this.productoSeleccionado.codProducto != null) {
+      this.recepcion.tipoProducto = this.productoSeleccionado.clasificacion;
+    }
+  }
+
+  consultarOrdenes() {
+    //validamos que se haya ingresado el número de la factura
+    if (this.recepcion.factura == null) {
+      alert("Debe ingresar el número de la factura");
+      this.recepcion.cantidad = null;
+      return false;
+    }
+    //Validamos que se ingrese una cantidad valida y mayor a 0
+    if (this.recepcion.cantidad == null || this.recepcion.cantidad <= 0) {
+      alert("Debe ingresar una cantidad válida");
+      return false;
+    }
+    //con este llamado le mandamos los parámetros al ws para que retorne las oc pendientes por recibir desde la mas antigua
+    if (this.productoSeleccionado != null && this.productoSeleccionado.codProducto != null) {
+      this.recepcion.tipoProducto = this.productoSeleccionado.clasificacion;
+      this.ordenesDialog = true;
+      this.mostrarOrdenes(this.productoSeleccionado.codProducto, this.recepcion.cantidad, this.recepcion.tipoProducto);
+    } else {
+      alert("Debe seleccionar un producto");
+    }
+  }
+
+  guardar() {
+    this.ordenesSeleccionadas = new Array();
+    for (let i = 0; i < this.ordenes.length; i++) {
+      if (this.ordenes[i].cantidad > 0) {
+        this.ordenes[i].transaccion = this.recepcion.transaccion;
+        this.ordenes[i].factura = this.recepcion.factura;
+        this.ordenesSeleccionadas.push(this.ordenes[i]);
+        this.cargando = true;
+      }
+    }
+    this.recepcionService.enviarLX(this.ordenesSeleccionadas).subscribe(res => {
+      this.cargando = false;
+      alert('Mensaje de almacenamiento: ' + res.detalle);
+      this.ordenesDialog = false;
+    }, error => {
+      console.log(error);
+      this.cargando = false;
+      alert('No hay conexión, error al guardar la recepcion');
+    })
+  }
+
+  mostrarOrdenes(prod, cant, tipo) {
+    this.cargando = true;
+    this.ordenService.getDinamico(prod, cant, tipo).subscribe((todos) => {
+      this.cargando = false;
+      if (todos.length == undefined) {
+        alert("No hay ordenes pendientes de recibir con ese producto");
+        this.cargando = false;
+        this.ordenesDialog = false;
+      } else {
+        this.ordenes = todos;
+        this.calcularTotal();
+      }
+    }, error => {
+      console.log(error);
+      this.cargando = false;
+      alert('No hay conexión, error al mostrar ordenes pendientes');
+    })
+  }
+
+  onRowEditInit(orden: orden) {
+    this.clonedProducts[orden.numeroOC] = { ...orden };
+  }
+
+  onRowEditSave(orden: orden) {
+    if (orden.cantidad <= orden.pendiente) {
+      orden.precioTotal = orden.cantidad * orden.precioUnitario;
+      delete this.clonedProducts[orden.numeroOC];
+    }
+    else {
+      orden.cantidad = 0;
+      orden.precioTotal = 0;
+      alert("cantidad inválida, debe ser mayor a 0 y menor o igual a la pendiente");
+    }
+    this.calcularTotal();
+  }
+
+  onRowEditCancel(orden: orden, index: number) {
+    this.orden2[index] = this.clonedProducts[orden.numeroOC];
+    delete this.orden2[orden.numeroOC];
+  }
+
+  mostrarBodega(orden: orden) {
+    this.orden = orden;
+    this.almacenDialog = true;
+  }
+
+  seleccionarBodega(almacen: Almacen) {
+    this.orden.bodega = almacen.codigo;
+    this.almacenDialog = false;
+  }
+
+  filtroAlmc(event) {
+    let query = event.query;
+    this.almacenService.getDinamico(query).subscribe((todos) => {
+      this.nomAlmc = todos;
+    }, error => {
+      console.log(error);
+      alert('No hay conexión, error al mostrar almacenes');
+    })
+  }
+
+  filtroUbica(event) {
+    let query = event.query;
+    let bod = this.orden.bodega;
+    this.ubicacionService.getIdUbicacion(query, bod).subscribe((todos) => {
+      this.nomUbic = todos;
+    }, error => {
+      console.log(error);
+      alert('No hay conexión, error al mostrar ubicaciones');
+    })
+  }
+
+  mostrarUbicacion(orden: orden) {
+    this.orden = orden;
+    this.ubicacionDialog = true;
+  }
+
+  seleccionarUbicacion(ubicacion: Ubicacion) {
+    this.orden.ubicacion = ubicacion.codUbicacion;
+    this.ubicacionDialog = false;
+  }
+
+  calcularTotal() {
+    this.cantidadTotal = 0;
+    for (let i = 0; i < this.ordenes.length; i++) {
+      this.cantidadTotal = this.cantidadTotal + this.ordenes[i].precioTotal;
+    }
+  }
+
+}

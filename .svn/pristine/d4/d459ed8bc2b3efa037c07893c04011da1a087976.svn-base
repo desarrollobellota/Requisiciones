@@ -1,0 +1,49 @@
+<div class="container">
+    <div  class="card">
+      <h3 class="card-header text-center">Historial de requisiciones creadas</h3>
+      <div class="card-body">
+  
+                <!--   TABLA PARA VISUALIZAR REQUISICIONES     -->
+      <div id="table" class="table-editable" *ngIf="historial">
+        <p class="centro">Esta tabla muestra el flujo que tienen las requisiciones creadas, 
+        aquí puede consultar si su requisición ya fue cotizada o aprobada, la fecha y el usuario que realizó la acción.</p>
+        <p-table #dt [value]="historial" selectionMode="single" [paginator]="true" [rows]="10"  [responsive]="true"
+        [globalFilterFields]="['idRequisicion','estado','idAprobador']" [rowsPerPageOptions]="[10,25,50,100]" >
+          <ng-template pTemplate="caption">
+            <div class="p-grid" >
+              <div class="p-col-12" style="text-align: right">        
+                <i class="pi pi-search" style="margin:4px 4px 0 0"></i>
+                <input type="text" pInputText size="30" (input)="dt.filterGlobal($event.target.value, 'contains')" style="width:auto">
+              </div>
+              </div>
+        </ng-template>
+          <ng-template pTemplate="header">
+                <tr class="centro">
+                    <th>Número Requisición</th>
+                    <th>Fecha Modificación</th>
+                    <th>Cotizado por:</th>
+                    <th>Estado</th>   
+                </tr> 
+            </ng-template>
+            <ng-template pTemplate="body"  let-requisiciones>
+                <tr class="centro">
+                    <td><span class="ui-column-title">NúmeroReq</span>
+                        {{requisiciones.idRequisicion}}</td>
+                    <td><span class="ui-column-title">Fecha</span>
+                        {{requisiciones.fechaAprobacion.toString().substring(0, 10)}}</td> 
+                    <td><span class="ui-column-title">ModificadoPor:</span>
+                        {{requisiciones.idAprobador}}</td>
+                    <td><span class="ui-column-title">Estado</span>
+                        {{requisiciones.estado}}</td>
+                </tr>
+            </ng-template>
+           
+        </p-table>
+  
+      </div>
+      </div> 
+    </div>
+  </div>
+  <p-dialog [style]="{width: '9vw'}" [(visible)]="cargando" [closable]="false" [showHeader]="false" [resizable]="false"
+  [draggable]="false" [keepInViewport]="false" [autoZIndex]="false" [modal]="true"> 
+  <p-progressSpinner class="load"></p-progressSpinner></p-dialog>

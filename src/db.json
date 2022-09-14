@@ -1,0 +1,26 @@
+{
+    "oc": [
+  
+      {
+        "linea": [
+          {
+            "cantidad": 8,
+            "fechaRequerida": "2020-04-23",
+            "codigoProducto": "F50979",
+            "valor": "12000",
+            "tipoProductos": "producto",
+            "comentarioItem": " ",
+            "fechaCompras": " "
+          }
+        ],
+        "id": 1,
+        "comentario": "prueba requisicion",
+        "codProveedor": 30686,
+        "codAlmacen":  "FJ",
+        "usuario": "volaya",
+        "usuarioAprueba": "ahenao",
+        "puntoEnvio": "Bellota, Colombia",
+        "idRequisicion": 1003
+      }   
+        ]
+}

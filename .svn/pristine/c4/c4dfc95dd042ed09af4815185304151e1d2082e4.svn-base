@@ -1,0 +1,90 @@
+<!-- Head -->
+<div class="p-grid">
+  <div class="toolbar" role="banner">
+    <div *ngIf="mostrar" class="p-col-1 p-lg-4 p-md-4"><button pButton icon="pi pi-bars" class="boton-menu"
+        (click)="display=true"></button></div>
+    <div class="p-col-1 p-lg-4 p-md-4"><img class="logo" alt="Bellota Logo" src="assets/imagenes/logo.PNG" /></div>
+  </div>
+</div>
+<hr>
+<div class="contenido">
+  <!--Sidebar-->
+  <p-sidebar [(visible)]="display" [baseZIndex]="10000">
+    <hr>
+    <h1 style="text-align: center;">MENÚ</h1>
+    <hr>
+    <div class="vertical-menu">
+      <!-- <ul>
+        <a [routerLink]="['/inicio']" [routerLinkActive]="['Activado']">Inicio</a>
+        <li><a>Requisiciones</a>
+          <ul>
+            <li (click)="display=false"><a [routerLink]="['/crear']" [routerLinkActive]="['Activado']">Crear
+                Requisición</a></li>
+            <li (click)="display=false"><a [routerLink]="['/registro']" [routerLinkActive]="['Activado']">Mis
+                requisiciones creadas</a></li>
+            <li (click)="display=false"><a [routerLink]="['/historial']" [routerLinkActive]="['Activado']">Historial
+                Requisiciones</a></li>
+            <li (click)="display=false"><a [routerLink]="['/legalizacion']"
+                [routerLinkActive]="['Activado']">Crear Legalización</a></li>
+          </ul>
+        </li>
+
+        <li><a>Cotización</a>
+          <ul>
+            <li (click)="display=false"><a [routerLink]="['/cotizar']" [routerLinkActive]="['Activado']">Cotizar
+                Requisición</a></li>
+            <li (click)="display=false"><a [routerLink]="['/requisiciones']" [routerLinkActive]="['Activado']">Auditoria
+                Requisiciones</a></li>
+          </ul>
+        </li>
+
+        <li><a>Orden Compra</a>
+          <ul>
+            <li (click)="display=false"><a [routerLink]="['/ordenCompra']" [routerLinkActive]="['Activado']">Asignar
+                Cadena</a></li>
+            <li (click)="display=false"><a [routerLink]="['/adminProv']" [routerLinkActive]="['Activado']">Admin
+                Proveedores</a></li>
+            <li (click)="display=false"><a [routerLink]="['/correoProv']" [routerLinkActive]="['Activado']">Enviar
+                ordenes</a></li>
+            <li (click)="display=false"><a [routerLink]="['/historialoc']" [routerLinkActive]="['Activado']">Historial
+                OC</a></li>
+          </ul>
+        </li>
+
+        <li><a>Aprobaciones</a>
+          <ul>
+            <li (click)="display=false"><a [routerLink]="['/aprobar']" [routerLinkActive]="['Activado']">Aprobar
+                Requisición</a></li>
+            <li (click)="display=false"><a [routerLink]="['/aprobarLega']" [routerLinkActive]="['Activado']">Aprobar
+                Legalización</a></li>
+            <li (click)="display=false"><a [routerLink]="['/aprobarOC']" [routerLinkActive]="['Activado']">Aprobar Orden
+                de Compra</a></li>
+          </ul>
+        </li>
+        <li><a>Administrar</a>
+          <ul>
+            <li (click)="display=false"><a [routerLink]="['/admin']" [routerLinkActive]="['Activado']">Cadenas</a></li>
+            <li (click)="display=false"><a [routerLink]="['/adminReq']"
+                [routerLinkActive]="['Activado']">Requisiciones</a></li>
+          </ul>
+        </li>
+
+        <li><a>Recepción</a>
+          <ul>
+            <li (click)="display=false"><a [routerLink]="['/recepcionoc']" [routerLinkActive]="['Activado']">Recepción
+                Producto</a></li>
+            <li (click)="display=false"><a [routerLink]="['/recepcionordencompra']"
+                [routerLinkActive]="['Activado']">Recepción Orden Compra</a></li>
+          </ul>
+        </li>
+
+        <a (click)="display=false"  *ngIf="sesion" [routerLink]="['/inicio']"  [routerLinkActive]="['Activado']"
+          (click)="logout()">Cerrar Sesión</a>
+      </ul> -->
+
+      <p-panelMenu [model]="items"></p-panelMenu>
+    </div>
+  </p-sidebar>
+
+  <router-outlet></router-outlet>
+</div>

@@ -1,0 +1,297 @@
+<div class="container">
+    <div class="card">
+        <h3 class="card-header text-center">Recepción Orden de Compra</h3>
+        <div class="card-body">
+
+            <!--   TABLA PARA VISUALIZAR REQUISICIONES     -->
+            <div>
+                <p class="centro">En esta tabla puede consultar todas las requisiciones u ordenes de compra aprobadas en
+                    LX </p>
+
+                <p-table #dt [value]="ordenes" selectionMode="single" [paginator]="true" [rows]="10" [responsive]="true"
+                    [globalFilterFields]="['numeroOC','idProveedor','nombreProveedor', 'numeroReq']"
+                    [rowsPerPageOptions]="[10,25,50,100]">
+                    <ng-template pTemplate="caption">
+                        <div class="p-grid">
+                            <div class="p-col-12" style="text-align: right">
+                                <i class="pi pi-search" style="margin:4px 4px 0 0"></i>
+                                <input type="text" pInputText size="30"
+                                    (input)="dt.filterGlobal($event.target.value, 'contains')" style="width:auto">
+                            </div>
+                        </div>
+                    </ng-template>
+                    <ng-template pTemplate="header">
+                        <tr class="centro">
+                            <th>Número Orden Compra</th>
+                            <th>Código Proveedor</th>
+                            <th>Proveedor</th>
+                            <th>Número Requisición</th>
+                            <th>Detalle</th>
+                            <th>Recibir</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-ordenes>
+                        <tr class="centro">
+                            <td><span class="ui-column-title">NúmeroOC</span>
+                                {{ordenes.numeroOC}}</td>
+                            <td><span class="ui-column-title">CódigoProveedor</span>
+                                {{ordenes.idProveedor}}</td>
+                            <td><span class="ui-column-title">Proveedor</span>
+                                {{ordenes.nombreProveedor}}</td>
+                            <td><span class="ui-column-title">NúmeroReq</span>
+                                {{ordenes.numeroReq}}</td>
+                            <td><span class="ui-column-title">Detalle</span>
+                                <button type="button" size="sm" class="botonVer" (click)="open(ordenes)">VER</button>
+                            </td>
+                            <td><span class="ui-column-title">Recibir</span>
+                                <button (click)="recibirOC(ordenes.numeroOC,ordenes.nombreProveedor)" type="button"
+                                    size="sm" class="botonVer">Recibir</button>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+
+            </div>
+
+
+
+
+
+            <p-dialog header="Recepcion OC" [(visible)]="displayDialog" [modal]="true" [style]="{width:'50vw'}"
+                [baseZIndex]="10000" [draggable]="false" [maximizable]="true">
+                <div class="ui-fluid">
+                    <form #formPro="ngForm" class="card-body">
+                        <h3 class="card-header text-center">Orden de Compra Número: {{ordenCompra}}</h3><br>
+                        <h5 class="card-header text-center">Proveedor: {{proveedor}}</h5><br>
+                        <hr>
+                        <div class="p-grid ">
+                            <div class=" p-col-12 p-md-4 p-lg-4 " style="text-align: center;">
+                                <label for="factura">Factura *:</label><br>
+                                <input type="text" name="factura" #factura="ngModel" [(ngModel)]="recepcion.factura"
+                                    required>
+                            </div>
+
+                            <div class="p-col-12 p-md-4 p-lg-4 " style="text-align: center;">
+                                <label for="transaccion">Tipo de Transacción *
+                                    <span *ngIf="!transaccion.valid && transaccion.touched" class="danger">Seleccione
+                                        para continuar</span>
+                                </label><br>
+                                <select
+                                    class="ng-tns-c55-2 ui-inputtext ui-state-default ui-corner-all ui-autocomplete-input ng-start-inserted "
+                                    id="transaccion" name="transaccion" #transaccion="ngModel"
+                                    [(ngModel)]="recepcion.transaccion" required (change)="validarDevolucion();">
+                                    <option value="U">U / AJUSTES RECEPS COMPRAS(+)</option>
+                                    <option value="UC">UC / RECEPCIONES COMPRAS CON COSTE(+)</option>
+                                    <option value="DC">DC / DEVOLUCIONES COMPRAS PROVEED.(-)</option>
+                                </select>
+                            </div>
+                        </div>
+
+
+                        <div class="card">
+                            <h5>Productos</h5>
+                            <p-table [value]="ordenes" dataKey="linea" editMode="row">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th>Linea</th>
+                                        <th>Producto</th>
+                                        <th>Fecha</th>
+                                        <th>Bodega</th>
+                                        <th>Ubicacion</th>
+                                        <th>Lote</th>
+                                        <th>Precio Unitario</th>
+                                        <th>Pendiente</th>
+                                        <th>Cantidad</th>
+                                        <th>PrecioTotal</th>
+                                        <th style="width:8rem"></th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-orden let-editing="editing" let-ri="rowIndex">
+                                    <tr [pEditableRow]="orden">
+                                        <td>
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="output">
+                                                    {{orden.linea}}
+                                                </ng-template>
+                                            </p-cellEditor>
+                                        </td>
+                                        <td>
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="output">
+                                                    {{orden.producto}}-{{orden.descripcionProducto}}
+                                                </ng-template>
+                                            </p-cellEditor>
+                                        </td>
+                                        <td>
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="output">
+                                                    {{orden.fechaOC}}
+                                                </ng-template>
+                                            </p-cellEditor>
+                                        </td>
+                                        <td>
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="input">
+                                                    <input pInputText type="text" (click)=mostrarBodega(orden)>
+                                                </ng-template>
+                                                <ng-template pTemplate="output">
+                                                    {{orden.bodega}}
+                                                </ng-template>
+                                            </p-cellEditor>
+                                        </td>
+                                        <td>
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="input">
+                                                    <input pInputText type="text" (click)=mostrarUbicacion(orden)>
+                                                </ng-template>
+                                                <ng-template pTemplate="output">
+                                                    {{orden.ubicacion}}
+                                                </ng-template>
+                                            </p-cellEditor>
+                                        </td>
+                                        <td>
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="input">
+                                                    <input pInputText type="text" [(ngModel)]="orden.lote"
+                                                        [ngModelOptions]="{standalone: true}">
+                                                </ng-template>
+                                                <ng-template pTemplate="output">
+                                                    {{orden.lote}}
+                                                </ng-template>
+                                            </p-cellEditor>
+                                        </td>
+                                        <td>
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="input">
+                                                    <input pInputText type="text" [(ngModel)]="orden.precioUnitario"
+                                                        [ngModelOptions]="{standalone: true}">
+                                                </ng-template>
+                                                <ng-template pTemplate="output">
+                                                    {{orden.precioUnitario | number:'1.0':'en'}}
+                                                </ng-template>
+                                            </p-cellEditor>
+                                        </td>
+                                        <td>
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="output">
+                                                    {{orden.pendiente}}
+                                                </ng-template>
+                                            </p-cellEditor>
+                                        </td>
+                                        <td>
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="input">
+                                                    <input pInputText type="text" [(ngModel)]="orden.cantidad"
+                                                        [ngModelOptions]="{standalone: true}">
+                                                </ng-template>
+                                                <ng-template pTemplate="output">
+                                                    {{orden.cantidad}}
+                                                </ng-template>
+                                            </p-cellEditor>
+                                        </td>
+                                        <td>
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="output">
+                                                    {{orden.precioTotal | number:'1.0':'en'}}
+                                                </ng-template>
+                                            </p-cellEditor>
+                                        </td>
+                                        <td style="text-align:center">
+                                            <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow
+                                                icon="pi pi-pencil" (click)="onRowEditInit(orden)"
+                                                class="p-button-rounded p-button-text"></button>
+                                            <button *ngIf="editing" pButton pRipple type="button" pSaveEditableRow
+                                                icon="pi pi-check" (click)="onRowEditSave(orden)"
+                                                class="p-button-rounded p-button-text p-button-success p-mr-2"></button>
+                                            <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow
+                                                icon="pi pi-times" (click)="onRowEditCancel(orden, ri)"
+                                                class="p-button-rounded p-button-text p-button-danger"></button>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                            <div>
+                                <h5> Valor Total: {{cantidadTotal| number:'1.0':'en-US'}}</h5>
+                            </div>
+                            <p-dialog [style]="{'width': '15vw','height': '15vw' }" [(visible)]="cargando"
+                                 [closable]="false"  [showHeader]="false"  [resizable]="false"
+                                        [draggable]="false"  [keepInViewport]="false"  [autoZIndex]="false"
+                                 [modal]="true"> 
+                                        <p-progressSpinner class="load"></p-progressSpinner>
+                            </p-dialog>
+                        </div><br>
+
+                        <div class="ui-g-12 ui-md-10" style="padding-left: 45%;">
+                            <button class="button1" (click)="guardar();">Crear Entrada</button>
+                        </div>
+
+                    </form>
+                </div>
+            </p-dialog>
+
+
+            <p-dialog header="Seleccionar Bodega" [(visible)]="almacenDialog" [modal]="true" [style]="{width:'50vw'}"
+                [baseZIndex]="10000" [draggable]="false" [maximizable]="true">
+                <div class="p-grid">
+                    <div class=" p-col-12 p-md-6 p-lg-6  " style="text-align:center;">
+                        <label for="almc">Almacén *
+                            <span *ngIf="!almacen.valid && almacen.touched" class="danger">Seleccione para
+                                continuar</span>
+                        </label><br>
+                        <p-autoComplete name="almacen" #almacen="ngModel" [(ngModel)]="almacenSeleccionado"
+                            [suggestions]="nomAlmc" (completeMethod)="filtroAlmc($event)" field="descripcion"
+                            [minLength]="1" [size]="30" required>
+                            <ng-template let-alm pTemplate="item">
+                                <div class="ui-helper-clearfix EcbPov">
+                                    <div class="prov">{{alm.codigo}}</div>
+                                    <div class="prov">{{alm.descripcion}}</div>
+                                </div>
+                            </ng-template>
+                        </p-autoComplete>
+                        <div class="p-grid">
+                            <div class="ui-g-6">
+                                <button (click)="seleccionarBodega(almacenSeleccionado)" class="button1">Añadir
+                                    Bodega</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </p-dialog>
+
+            <p-dialog header="Seleccionar Ubicacion" [(visible)]="ubicacionDialog" [modal]="true"
+                [style]="{width:'30vw'}" [baseZIndex]="10000" [draggable]="false" [maximizable]="true">
+                <div class="p-grid">
+                    <div class=" p-col-12 p-md-6 p-lg-6  " style="text-align:center;">
+                        <label for="ubic">Ubicación *
+                            <span *ngIf="!ubicacion.valid && ubicacion.touched" class="danger">Seleccione para
+                                continuar</span>
+                        </label><br>
+                        <p-autoComplete name="ubicacion" #ubicacion="ngModel" [(ngModel)]="ubicacionSeleccionada"
+                            [suggestions]="nomUbic" (completeMethod)="filtroUbica($event)" field="codUbicacion"
+                            [minLength]="1" [size]="30" required>
+                            <ng-template let-ubi pTemplate="item">
+                                <div class="ui-helper-clearfix EcbPov">
+                                    <div class="prov">{{ubi.codUbicacion}}</div>
+                                    <div class="prov">{{ubi.descUbicacion}}</div>
+                                </div>
+                            </ng-template>
+                        </p-autoComplete>
+                        <div class="p-grid">
+                            <div class="ui-g-6">
+                                <button (click)="seleccionarUbicacion(ubicacionSeleccionada)" class="button1">Añadir
+                                    Ubicacion</button>
+                            </div>
+                        </div>
+                        <p-dialog [style]="{width: '9vw'}" [(visible)]="cargando" [closable]="false"
+                            [showHeader]="false" [resizable]="false" [draggable]="false" [keepInViewport]="false"
+                            [autoZIndex]="false" [modal]="true">
+                            <p-progressSpinner class="load"></p-progressSpinner>
+                        </p-dialog>
+                    </div>
+                </div>
+            </p-dialog>
+
+
+        </div>
+    </div>
+</div>

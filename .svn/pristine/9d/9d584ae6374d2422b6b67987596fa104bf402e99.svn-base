@@ -1,0 +1,224 @@
+import { Component, OnInit } from '@angular/core';
+import { Requisicion } from 'src/app/interface/requisicion';
+import { oc } from 'src/app/interface/oc';
+import { RecepcionService } from 'src/app/services/recepcion/recepcion.service';
+import { RecepcionOC } from 'src/app/interface/recepcionoc';
+import { OrdenService } from 'src/app/services/orden/orden.service';
+import { orden } from 'src/app/interface/orden';
+import { Almacen } from 'src/app/interface/almacen';
+import { AlmacenService } from 'src/app/services/almacen/almacen.service';
+import { Ubicacion } from 'src/app/interface/ubicacion';
+import { UbicacionService } from 'src/app/services/ubicacion/ubicacion.service';
+import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
+import { KeycloakAngularModule } from 'keycloak-angular';
+
+@Component({
+  selector: 'app-recepcionordencompra',
+  templateUrl: './recepcionordencompra.component.html',
+  styleUrls: ['./recepcionordencompra.component.css']
+})
+export class RecepcionordencompraComponent implements OnInit {
+
+  public ordenCompra: number;
+  public proveedor: string;
+  public requisiciones: Array<Requisicion>;
+  public cargando: boolean = false;
+  oc: Array<oc>;
+  displayDialog: boolean;
+  public recepcion: RecepcionOC;
+  public orden: orden;
+  public ordenes: Array<orden>;
+  clonedProducts: { [s: string]: orden; } = {};
+  public orden2: orden;//arreglo utilizado para la edición de la tupla de ordenes pendientes
+
+  public almacenSeleccionado: any;
+  public nomAlmc: Array<Almacen>;
+  almacenDialog: boolean;
+
+  public ubicacionSeleccionada: any;
+  public nomUbic: Array<Ubicacion>;
+  ubicacionDialog: boolean;
+
+  public ordenesSeleccionadas: Array<orden>;
+  public cantidadTotal: number;
+
+  constructor(
+    private recepcionService: RecepcionService,
+    private ordenService: OrdenService,
+    private almacenService: AlmacenService,
+    private ubicacionService: UbicacionService
+  ) { }
+
+  ngOnInit(): void {
+    this.oc = new Array;
+    this.cantidadTotal = 0;
+    this.mostrarRequisiciones();
+    this.recepcion = new RecepcionOC();
+  }
+
+  mostrarRequisiciones() {
+    this.cargando = true;
+    this.recepcionService.getPendientes().subscribe(todos => {
+      this.cargando = false;
+      this.ordenes = todos;
+    }, error => {
+      console.log(error);
+      alert('Hubo un error al mostrar requisiciones ' + error.message);
+    });
+  }
+
+  open(oc) {
+    window.open(window.location.href.substring(0, window.location.href.lastIndexOf('/')) + '/verOC/' + oc.numeroOC, '_blank')
+  }
+
+  recibirOC(ordenc, prov) {
+    this.displayDialog = true;
+    this.ordenCompra = ordenc;
+    this.proveedor = prov;
+    this.mostrarOrdenes(ordenc);
+    
+  }
+
+  mostrarOrdenes(ordenc) {
+    this.cargando = true;
+    this.ordenService.getDinamicoOC(ordenc).subscribe((todos) => {
+      this.cargando = false;
+      this.ordenes = todos;
+      this.calcularTotal();
+    }, error => {
+      console.log(error);
+      this.cargando = false;
+      alert('No hay conexión, error al mostrar ordenes pendientes');
+    })
+  }
+
+  onRowEditInit(orden: orden) {
+    this.clonedProducts[orden.linea] = { ...orden };
+  }
+
+  onRowEditSave(orden: orden) {
+    if (orden.cantidad > 0 && orden.cantidad <= orden.pendiente) {
+      orden.precioTotal = orden.cantidad * orden.precioUnitario;
+      delete this.clonedProducts[orden.linea];
+    }
+    else {
+      orden.cantidad = 0;
+      orden.precioTotal = 0;
+    }
+    this.calcularTotal();
+  }
+
+  onRowEditCancel(orden: orden, index: number) {
+    this.orden2[index] = this.clonedProducts[orden.linea];
+    delete this.orden2[orden.linea];
+  }
+
+  mostrarBodega(orden: orden) {
+    this.orden = orden;
+    this.almacenDialog = true;
+  }
+
+  seleccionarBodega(almacen: Almacen) {
+    this.orden.bodega = almacen.codigo;
+    this.almacenDialog = false;
+  }
+
+  filtroAlmc(event) {
+    let query = event.query;
+    this.almacenService.getDinamico(query).subscribe((todos) => {
+      this.nomAlmc = todos;
+    }, error => {
+      console.log(error);
+      alert('No hay conexión, error al mostrar almacenes');
+    })
+  }
+
+  filtroUbica(event) {
+    let query = event.query;
+    let bod = this.orden.bodega;
+    this.ubicacionService.getIdUbicacion(query, bod).subscribe((todos) => {
+      this.nomUbic = todos;
+    }, error => {
+      console.log(error);
+      alert('No hay conexión, error al mostrar ubicaciones');
+    })
+  }
+
+  mostrarUbicacion(orden: orden) {
+    this.orden = orden;
+    this.ubicacionDialog = true;
+  }
+
+  seleccionarUbicacion(ubicacion: Ubicacion) {
+    this.orden.ubicacion = ubicacion.codUbicacion;
+    this.ubicacionDialog = false;
+  }
+
+  guardar() {
+    if (this.recepcion.factura == null) {
+      alert("Debe Ingresar el número de la factura");
+      return;
+    }
+    if (this.recepcion.transaccion == null) {
+      alert("Debe seleccionar la transacción");
+      return;
+    }
+    this.ordenesSeleccionadas = new Array();
+    for (let i = 0; i < this.ordenes.length; i++) {
+      if (this.ordenes[i].cantidad > 0) {
+        this.ordenes[i].transaccion = this.recepcion.transaccion;
+        this.ordenes[i].factura = this.recepcion.factura;
+        this.ordenesSeleccionadas.push(this.ordenes[i]);
+        this.cargando = true;
+      }
+    }
+    if (this.ordenesSeleccionadas.length > 0) {
+      this.recepcionService.enviarLX(this.ordenesSeleccionadas).subscribe(res => {
+        this.cargando = false;
+        alert('Mensaje de almacenamiento: ' + res.detalle);
+        this.displayDialog = false;
+        this.recepcion.factura = " ";
+        this.mostrarRequisiciones();
+      }, error => {
+        console.log(error);
+        this.cargando = false;
+        alert('No hay conexión, error al guardar la recepcion');
+      })
+    } else {
+      alert("Las cantidades recibidas deben ser mayor a 0");
+    }
+  }
+
+  validarDevolucion() {
+    if (this.recepcion.transaccion == "DC") {
+      for (let i = 0; i < this.ordenes.length; i++) {
+        this.ordenes[i].precioOriginal = this.ordenes[i].precioUnitario;
+        this.ordenes[i].precioUnitario = this.ordenes[i].precioUnitario * -1;
+        this.ordenes[i].precioTotal = this.ordenes[i].precioTotal * -1;
+      }
+    } else if (this.recepcion.transaccion == "U") {
+      for (let i = 0; i < this.ordenes.length; i++) {
+        if (this.ordenes[i].bodega != 'NI' && this.ordenes[i].bodega != 'CO') {
+          alert("La transacción U no se puede usar con esta bodega, seleccione la correcta");
+          this.recepcion.transaccion = "";
+        }
+      }
+    } else {
+      for (let i = 0; i < this.ordenes.length; i++) {
+        if (this.ordenes[i].precioUnitario < 0) {
+          this.ordenes[i].precioUnitario = this.ordenes[i].precioOriginal;
+          this.ordenes[i].precioTotal = this.ordenes[i].cantidad * this.ordenes[i].precioUnitario;
+        }
+      }
+    }
+    this.calcularTotal();
+  }
+
+  calcularTotal() {
+    this.cantidadTotal = 0;
+    for (let i = 0; i < this.ordenes.length; i++) {
+      this.cantidadTotal = this.cantidadTotal + this.ordenes[i].precioTotal;
+    }
+  }
+
+}

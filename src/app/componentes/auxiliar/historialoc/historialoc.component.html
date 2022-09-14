@@ -1,0 +1,71 @@
+<div class="container">
+    <div class="card">
+        <h3 class="card-header text-center">Historial de Ordenes de Compra</h3>
+        <div class="card-body">
+
+            <!--   TABLA PARA VISUALIZAR ORDENES DE COMPRA     -->
+            <div id="table" class="table-editable" *ngIf="oc">
+                <p class="centro">Esta tabla muestra el flujo que tienen las ordenes de compra,
+                    aquí puede consultar si su orden de compra esta pendiente o aprobada, la fecha y el usuario que
+                    realizó la acción.</p>
+                <p-table #dt [value]="oc" selectionMode="single" [paginator]="true" [rows]="10" [responsive]="true"
+                    [globalFilterFields]="['numeroOrdenCompra','numeroRequisicion','aprobador','estado']"
+                    [rowsPerPageOptions]="[10,25,50,100]">
+                    <ng-template pTemplate="caption">
+                        <div class="p-grid">
+                            <div class="p-col-12" style="text-align: right">
+                                <i class="pi pi-search" style="margin:4px 4px 0 0"></i>
+                                <input type="text" pInputText size="30"
+                                    (input)="dt.filterGlobal($event.target.value, 'contains')" style="width:auto">
+                            </div>
+                        </div>
+                    </ng-template>
+                    <ng-template pTemplate="header">
+                        <tr class="centro">
+                            <th>Número OC</th>
+                            <th>Número Req</th>
+                            <th>Usuario Aprobador</th>
+                            <th>Area</th>
+                            <th>Fecha Cambio</th>
+                            <th>Valor Anterior</th>
+                            <th>Nuevo Valor</th>
+                            <th>Moneda</th>
+                            <th>Estado</th>
+                            <th>Ver</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-oc>
+                        <tr class="centro">
+                            <td><span class="ui-column-title">NúmeroOC</span>
+                                {{oc.numeroOrdenCompra}}</td>
+                            <td><span class="ui-column-title">NúmeroReq</span>
+                                {{oc.numeroRequisicion}}</td>
+                            <td><span class="ui-column-title">UsuarioAprobador</span>
+                                {{oc.aprobador}}</td>
+                            <td><span class="ui-column-title">Area</span>
+                                {{oc.area}}</td>
+                            <td><span class="ui-column-title">FechaCambio</span>
+                                {{oc.fechaCambioDB.toString().substring(0, 10)}}</td>
+                            <td><span class="ui-column-title">Valor Anterior</span>
+                                {{oc.valorAnterior | number:'1.0':'en-US' }}</td>
+                            <td><span class="ui-column-title">Nuevo Valor</span>
+                                {{oc.nuevoValor | number:'1.0':'en-US' }}</td>
+                                <td><span class="ui-column-title">Moneda</span>
+                                    {{oc.moneda}}</td>    
+                            <td><span class="ui-column-title">Estado</span>
+                                {{oc.estado}}</td>
+                            <td><button type="button" size="sm" class="botonVer" (click)="open(oc)">VER OC</button>
+                            </td>
+                        </tr>
+                    </ng-template>
+
+                </p-table>
+
+            </div>
+        </div>
+    </div>
+</div>
+<p-dialog [style]="{width: '9vw'}" [(visible)]="cargando" [closable]="false" [showHeader]="false" [resizable]="false"
+    [draggable]="false" [keepInViewport]="false" [autoZIndex]="false" [modal]="true">
+    <p-progressSpinner class="load"></p-progressSpinner>
+</p-dialog>

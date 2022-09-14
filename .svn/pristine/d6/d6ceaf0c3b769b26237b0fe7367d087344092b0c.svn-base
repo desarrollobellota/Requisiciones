@@ -1,0 +1,271 @@
+<body>
+
+
+  <!--FORMULARIO PARA LA CREACIÓN DE REQUISICIONES-->
+
+  <div class="ui-fluid">
+
+    <div class=" card">
+
+      <h2 class="card-header text-center">Crear nueva requisición</h2>
+
+      <form #formRequisicion="ngForm" class="card-body">
+        <p-dialog [style]="{width: '9vw'}" [(visible)]="cargando" [closable]="false" [showHeader]="false"
+          [resizable]="false" [draggable]="false" [keepInViewport]="false" [autoZIndex]="false" [modal]="true">
+          <p-progressSpinner class="load"></p-progressSpinner>
+        </p-dialog>
+
+        <div class="p-grid texto">
+
+          <div class="p-col-12 p-md-6 p-lg-6 " style="text-align: center;">
+            <label for="NombreRequisitor">Nombre requisitor: {{usuario.firstName}}</label>
+          </div>
+
+          <div class=" p-col-12 p-md-6 p-lg-6 " style="text-align: center;">
+            <label for="FechaCreación">Fecha de Creación: {{this.fechaCreacion}} </label>
+          </div>
+
+        </div>
+
+        <div class="p-grid">
+
+          <div class=" p-col-12 p-md-6 p-lg-6  " style="text-align: center;">
+            <label for="areaRequisitora">Área requisitora *
+              <span *ngIf="!areas.valid && areas.touched" class="danger">Seleccione para continuar</span>
+            </label><br>
+            <p-dropdown [options]="nomArea" optionLabel="area" name="areas" #areas="ngModel"
+              [(ngModel)]="areaSeleccionada"></p-dropdown>
+          </div>
+
+          <div class=" p-col-12 p-md-6 p-lg-6 " style="text-align: center;">
+            <label for="prov"> Proveedor</label><br>
+            <p-autoComplete name="prov" #prov="ngModel" [(ngModel)]="proveedorSeleccionado" [suggestions]="nomProv"
+              (completeMethod)="filtroProv($event)" field="nombreProveedor" [minLength]="1" [size]="30">
+              <ng-template let-prov pTemplate="item">
+                <div class="ui-helper-clearfix EcbPov">
+                  <div class="prov">{{prov.codProveedor}}</div>
+                  <div class="prov">{{prov.nombreProveedor}}</div>
+                </div>
+              </ng-template>
+            </p-autoComplete>
+          </div>
+
+        </div>
+
+        <div class="p-grid">
+          <div class=" p-col-12 p-md-6 p-lg-6  " style="text-align:center;">
+            <label for="almc">Almacén *
+              <span *ngIf="!almacen.valid && almacen.touched" class="danger">Seleccione para continuar</span>
+            </label><br>
+            <p-autoComplete name="almacen" #almacen="ngModel" [(ngModel)]="almacenSeleccionado" [suggestions]="nomAlmc"
+              (completeMethod)="filtroAlmc($event)" field="descripcion" [minLength]="1" [size]="30" required>
+              <ng-template let-alm pTemplate="item">
+                <div class="ui-helper-clearfix EcbPov">
+                  <div class="prov">{{alm.codigo}}</div>
+                  <div class="prov">{{alm.descripcion}}</div>
+                </div>
+              </ng-template>
+            </p-autoComplete>
+
+          </div>
+
+          <div class=" p-col-12 p-md-6 p-lg-6" style="text-align: center;">
+            <label>Centro de Costos</label><br>
+            <p-autoComplete name="cc" #cc="ngModel" [(ngModel)]="ccSeleccionado" [suggestions]="ccs"
+              (completeMethod)="mostrarCc($event)" field="codigoCentroCosto" [minLength]="1" [size]="30">
+              <ng-template let-ccs pTemplate="item">
+                <div class="ui-helper-clearfix EcbPov">
+                  <div class="prov">{{ccs.codigoCentroCosto}}</div>
+                  <div class="prov">{{ccs.descripcionCentroCosto}}</div>
+                </div>
+              </ng-template>
+            </p-autoComplete>
+          </div>
+        </div>
+
+        <div class="p-grid">
+          <div class=" p-col-12 p-md-6 p-lg-6" style="text-align: center;">
+            <label for="moneda">Moneda *
+              <span *ngIf="!moneda.valid && moneda.touched" class="danger">Seleccione para continuar</span>
+            </label><br>
+            <select
+              class="ng-tns-c55-2 ui-inputtext ui-state-default ui-corner-all ui-autocomplete-input ng-start-inserted "
+              id="moneda" name="moneda" #moneda="ngModel" [(ngModel)]="requisicion.moneda">
+              <option value="COP">COP</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+            </select>
+          </div>
+          <div class=" p-col-12 p-md-6 p-lg-6" style="text-align: center;">
+            <label for="com">Comentarios </label><br>
+            <textarea pInputTextarea rows="1" [style]="{width:'40vw'}" name="com" #com="ngModel"
+              [(ngModel)]="requisicion.comentario"></textarea>
+          </div>
+
+        </div>
+
+        <div class="p-grid">
+          <div class="ui-g-6">
+            <button (click)="nuevoProd()" class="button1">Añadir Producto</button>
+          </div>
+        </div><br><br>
+
+
+        <!--            TABLA DE PRODUCTOS CREADOS
+                En la tabla se muestran los productos creados-->
+
+        <div class="ui-g-12 ui-md-12">
+
+          <p-table [value]="lineas" [responsive]="true" selectionMode="single" [(selection)]="linea"
+            (onRowSelect)="onRowSelect($event)">
+
+            <ng-template pTemplate="header">
+              <tr class="centro">
+                <th>Cod.Producto</th>
+                <th>Cantidad</th>
+                <th>Valor Und</th>
+                <th>Fecha Solicitado</th>
+                <th>Centro de Costos</th>
+                <th>Subtotal</th>
+                <th>Observaciones</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-rowData let-prod>
+              <tr [pSelectableRow]="rowData" class="centro">
+                <td>{{rowData[prod.codProducto] }} {{prod.codProducto}}</td>
+                <td>{{rowData[prod.cantidad] }} {{prod.cantidad}}</td>
+                <td>{{rowData[prod.valorUnidad]}} {{prod.valorUnidad}}</td>
+                <td>{{rowData[prod.fechaRequerido]}} {{prod.fechaRequerido | date:'dd-MM-yyyy' }}</td>
+                <td>{{rowData[prod.idCentroCostos]}} {{prod.idCentroCostos}}</td>
+                <td>{{rowData[prod.subtotal]}} {{prod.subtotal | number:'1.0':'en-US'}}</td>
+                <td>{{rowData[prod.observacion]}} {{prod.observacion}}</td>
+              </tr>
+            </ng-template>
+
+          </p-table>
+
+        </div><br>
+        <div>
+          <h5> Total Líneas: {{cantidadLineas}}</h5>
+          <h5> Valor Total: {{cantidadTotal| number:'1.0':'en-US'}}</h5>
+        </div>
+
+        <div class="ui-g-12 ui-md-10" style="padding-left: 45%;">
+          <button class="button1"
+            (click)="crearRequisicion(lineas, proveedorSeleccionado, almacenSeleccionado, areaSeleccionada); formRequisicion.reset();">Crear
+            Requisición</button>
+        </div>
+
+      </form>
+      <!--       MODAL CON FORMULARIO PARA LA CREACIÓN DE NUEVOS PRODUCTOS -->
+
+      <p-dialog header="Detalle Producto" [(visible)]="displayDialog" [modal]="true" [style]="{width:'50vw'}"
+        [baseZIndex]="10000" [draggable]="false" [maximizable]="true">
+        <div class="ui-fluid">
+          <form #formPro="ngForm" class="card-body">
+            <hr>
+            <div class="p-grid ">
+              <div class="p-col-12 p-md-6 p-lg-4">
+                <label for="codProducto">Código Producto *
+                  <span *ngIf="!cod.valid && cod.touched" class="danger">Seleccione un producto</span>
+                </label><br>
+                <p-autoComplete name="cod" #cod="ngModel" [(ngModel)]="productoSeleccionado" [suggestions]="nomProd"
+                  (completeMethod)="filtroProd($event)" field="descripcionProducto" [minLength]="1" [size]="25">
+                  <ng-template let-pr pTemplate="item">
+                    <div class="ui-helper-clearfix EcbPov">
+                      <div class="prov">{{pr.codProducto}}</div>
+                      <div class="prov">{{pr.descripcionProducto}}</div>
+                    </div>
+                  </ng-template>
+                </p-autoComplete>
+              </div>
+
+              <div class="p-col-12 p-md-6 p-lg-4">
+                <label for="cantidad">Cantidad *
+                </label><span *ngIf="!cant.valid && cant.touched" class="danger">Digite la cantidad de productos que
+                  requiere</span>
+                <br>
+                <input type="number" pInputText min="1" name="cant" #cant="ngModel" [(ngModel)]="nuevaLinea.cantidad"
+                  required>
+              </div>
+
+              <div class="p-col-12 p-md-6 p-lg-4">
+                <label for="fecha">Fecha Solicitado </label><br>
+                <p-calendar [touchUI]="true" [minDate]="fechaCr" [defaultDate]="fechaCr" [readonlyInput]="true"
+                  showButtonBar="true" name="fecha" #fecha="ngModel" [(ngModel)]="nuevaLinea.fechaRequerido">
+                </p-calendar>
+              </div>
+            </div>
+
+            <div class="p-grid ">
+
+              <div class="p-col-12 p-md-6 p-lg-4">
+                <label for="vlr">Valor Unidad </label><br>
+                <input pInputText type="number" name="vlr" #vlr="ngModel" [(ngModel)]="nuevaLinea.valorUnidad">
+              </div>
+
+              <div class="p-col-12 p-md-6 p-lg-4">
+                <label>Centro Costos: <strong
+                    *ngIf="ccSeleccionado">{{ccSeleccionado.codigoCentroCosto}}</strong></label><br>
+                <p-autoComplete name="cc" #cc="ngModel" [(ngModel)]="ccSeleccionado" [suggestions]="ccs"
+                  (completeMethod)="mostrarCc($event)" field="codigo" [minLength]="1" [size]="30">
+                  <ng-template let-ccs pTemplate="item">
+                    <div class="ui-helper-clearfix EcbPov">
+                      <div class="prov">{{ccs.codigoCentroCosto}}</div>
+                      <div class="prov">{{ccs.descripcionCentroCosto}}</div>
+                    </div>
+                  </ng-template>
+                </p-autoComplete>
+              </div>
+
+              <div class="p-col-12 p-md-6 p-lg-4">
+                <label for="obs">Observaciones </label><br>
+                <textarea pInputTextarea rows="2" name="obs" #obs="ngModel"
+                  [(ngModel)]="nuevaLinea.observacion"></textarea>
+              </div>
+
+            </div>
+
+            <div class="p-grid ">
+              <div class="p-col-12 p-md-6 p-lg-4 estiloDiv">
+                <button type="submit" class="button1" (click)="delete();formPro.reset()">Borrar</button>
+              </div>
+              <div class="p-col-12 p-md-6 p-lg-4">
+                <button type="submit" class="button1"
+                  (click)="productosCreados(productoSeleccionado,ccSeleccionado);formPro.reset()"
+                  [disabled]=!formPro.form.valid>Añadir</button>
+              </div>
+              <div class="p-col-12 p-md-6 p-lg-4 estiloDiv">
+                <button type="submit" class="button1" (click)="precio(productoSeleccionado,nuevaLinea)">Consultar Precio</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </p-dialog>
+
+      <!-- MODAL CONFIRMACIÓN CREACIÓN DE NUEVA REQ-->
+
+      <p-dialog header="Confirmación" [(visible)]="confirmacion" [style]="{width: '50vw'}">
+        Requisición número {{id}} creada con éxito
+        <p-footer>
+          <button class="button1" (click)="creadaReq()">Cerrar</button>
+        </p-footer>
+      </p-dialog>
+
+      <p-dialog header="Error" [(visible)]="faltaAlmacen" [style]="{width: '50vw'}">
+        <h3>Por favor seleccione el almacén y la moneda </h3>
+        <p-footer>
+          <button class="button1" (click)="faltaAlmacen=false">Aceptar</button>
+        </p-footer>
+      </p-dialog>
+
+
+      <p-dialog header="ErrorCantidad" [(visible)]="ErrorCantidad" [style]="{width: '50vw'}">
+        <h3>La cantidad de productos NO puede ser 0 </h3>
+        <p-footer>
+          <button class="button1" (click)="ErrorCantidad=false">Aceptar</button>
+        </p-footer>
+      </p-dialog>
+
+    </div>
+    <br>

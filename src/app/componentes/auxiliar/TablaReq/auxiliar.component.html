@@ -1,0 +1,212 @@
+<body>
+
+  <!--                TABLA DE REQUISICIONES SIN APROBAR
+        En reqSelect se captura la requisición seleccionada por el radioButton
+        y se envía como parametro a la función showDialog, la cual muestra el modal-->
+
+  <div class="container">
+
+    <div class="card">
+
+      <h2 class="card-header text-center">Requisiciones pendientes por cotizar</h2><br>
+      <h6 class="centro">Seleccione la requisición que desea cotizar y haga clic en en botón "Modificar Requisición"
+      </h6><br>
+      <p-table #tabla [value]="requisiciones" selectionMode="single" [(selection)]="reqSelect"
+        [globalFilterFields]="['idReq','nombreRequisitor']" [paginator]="true" [rows]="5" [responsive]="true"
+        [rowsPerPageOptions]="[10,25,50,100]">
+        <ng-template pTemplate="caption">
+          <div style="text-align: right">
+            <i class="pi pi-search" style="margin:4px 4px 0 0;"></i>
+            <input type="text" pInputText size="30" (input)="tabla.filterGlobal($event.target.value, 'contains')"
+              style="width:auto">
+          </div>
+        </ng-template>
+        <ng-template pTemplate="header">
+          <tr class="centro">
+            <th style="width: 3em"></th>
+            <th>Número req.</th>
+            <th>Fecha Creación</th>
+            <th>Nombre Requisitor</th>
+            <th>Valor Requisición</th>
+            <th>Moneda</th>
+            <th>Fecha Modificación</th>
+            <th>Cotizar</th>
+            <th style="width: 8em">Detalle Req</th>
+            <th>Rechazar</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-requisiciones>
+          <tr class="centro">
+            <td>
+              <p-tableRadioButton [value]="requisiciones"></p-tableRadioButton>
+            </td>
+            <td><span class="ui-column-title">Id Req</span>
+              {{requisiciones.idReq}}</td>
+            <td><span class="ui-column-title">Creación</span>
+              {{requisiciones.fechaCreacion.toString().substring(0, 10)}}</td>
+            <td><span class="ui-column-title">Requisitor</span>
+              {{requisiciones.nombreRequisitor}}</td>
+            <td><span class="ui-column-title">ValorTotal</span>
+              {{requisiciones.valorReq | number:'1.0':'en-US' }}</td>
+            <td><span class="ui-column-title">Moneda</span>
+                {{requisiciones.moneda}}</td>
+            <td *ngIf="requisiciones.fechaModificacion"><span class="ui-column-title">Modificación</span>
+              {{requisiciones.fechaModificacion.toString().substring(0, 10)}}</td>
+            <td *ngIf="!requisiciones.fechaModificacion"><span class="ui-column-title">Modificación</span>
+              {{requisiciones.fechaModificacion}}</td>
+            <td><span class="ui-column-title">Cotizar</span>
+              <button type="reset" size="sm" class="botonVer"
+                (click)="confirmacionLanzar(requisiciones)">COTIZAR</button></td>
+            <td><span class="ui-column-title">Ver</span>
+              <button type="button" size="sm" class="botonVer" (click)="open(requisiciones)">VER</button></td>
+            <td><span class="ui-column-title">Rechazar</span>
+              <button type="button" size="sm" class="botonVer" (click)="motivoRechazo(requisiciones)">Rechazar</button>
+            </td>
+
+          </tr>
+        </ng-template>
+
+      </p-table><br>
+      <div class="estiloDiv">
+        <button class="button1" type="reset" (click)="showDialog(reqSelect)" ng-disabled="checked">Modificar
+          Requisición</button>
+      </div>
+
+    </div>
+
+
+    <!--        MODAL PARA MODIFICAR VALOR DE LAS REQUISICIONES
+        La función showDialog realiza la petición GET a la API de reqSelect.id 
+permitiendo mostrar los productos que tengan asociados solo el número de requisición seleccionado-->
+
+
+    <p-dialog header="Modificar requisión número: {{reqId.idReq}}" [(visible)]="display" [modal]="true"
+      [style]="{width:'50vw'}" [maximizable]="true" [baseZIndex]="10000" [draggable]="true">
+      <br>
+      <h6 class="centro">Haga clic en el campo de "Proveedor" o "Valor Und" para modificar</h6>
+
+      <form #formPrecio="ngForm" class="card-body">
+        <div class="ui-fluid estiloDiv">
+          <div class="p-grid">
+            <div class="p-offset-4 p-col-4">
+              <label for="prov"> Código de proveedor: {{reqId.codProveedor}}
+              </label><br>
+              <p-autoComplete name="prov" #prov="ngModel" [(ngModel)]="proveedorSeleccionado" [suggestions]="nomProv"
+                (completeMethod)="mostrarProveedores($event)" field="codProveedor" [size]="30" [minLength]="1">
+                <ng-template let-prov pTemplate="item">
+                  <div class="ui-helper-clearfix" class="EcbPov">
+                    <div class="prov">{{prov.codProveedor}}</div>
+                    <div class="prov">{{prov.nombreProveedor}}</div>
+                  </div>
+                </ng-template>
+              </p-autoComplete>
+            </div>
+          </div>
+          <br>
+
+          <button class="button1" type="submit" (click)="precio(reqId, proveedorSeleccionado.codProveedor);">Consultar
+            Precio</button>
+        </div><br>
+      </form>
+
+      <p-table [value]="reqId.detalleReq" selectionMode="single" [paginator]="true" [rows]="3" [responsive]="true"
+        [scrollable]="true">
+        <ng-template pTemplate="header">
+          <tr class="centro">
+            <th>Cod.Producto</th>
+            <th>Cantidad</th>
+            <th>* Valor Und</th>
+            <th>Fecha Cotización</th>
+            <th>Fecha Solicitado</th>
+            <th>Notas</th>
+          </tr>
+
+        </ng-template>
+        <ng-template pTemplate="body" let-req>
+          <tr class="centro">
+
+            <td><span class="ui-column-title">Id Producto</span>
+              {{req.codProducto}}</td>
+            <td><span class="ui-column-title">Cantidad</span>
+              {{req.cantidad}}</td>
+            <td pEditableColumn><span class="ui-column-title">Valor</span>
+              <label>{{req.valorUnidad | number:'1.0':'en-US'}}</label>
+              <p-cellEditor>
+                <ng-template pTemplate="input">
+                  <input pInputText name="vlr" #vlr="ngModel" [(ngModel)]="req.valorUnidad">
+                </ng-template>
+              </p-cellEditor>
+            </td>
+
+            <td pEditableColumn><span class="ui-column-title">Fecha Cotización</span>
+              <p-calendar [ngModelOptions]="{standalone: true}" [inputStyle]="{'width':'100%'}" [touchUI]="true"
+                [minDate]="fechaMd" showButtonBar="true" [(ngModel)]="req.fechaCompras"></p-calendar>
+              <!--   <input type="date" style="width: 100%;" [(ngModel)]="req.fechaCompras"> -->
+            </td>
+
+            <td *ngIf="req.fechaRequerido"><span class="ui-column-title">fechaRequerido</span>
+              {{req.fechaRequerido.toString().substring(0, 10)}}</td>
+            <td *ngIf="!req.fechaRequerido"><span class="ui-column-title">fechaRequerido</span>
+              {{req.fechaRequerido}}</td>
+            <td><span class="ui-column-title">Notas</span>
+              {{req.observacion}}</td>
+          </tr>
+        </ng-template>
+      </p-table><br>
+      <div class="estiloDiv">
+        <a> <button type="reset" (click)="modificarProducto(reqId, proveedorSeleccionado)"
+            class="button1">Modificar</button> </a>
+      </div>
+
+    </p-dialog>
+
+    <p-dialog header="Confirmación" [(visible)]="lanzar" [modal]="true" [style]="{width: '60vw'}">
+      <h4 style="text-align: center;">¿ Seguro que desea COTIZAR la requisición número: {{ReqLanzar.idReq}} ?</h4>
+      <p-progressSpinner *ngIf="cargando" class="load"></p-progressSpinner>
+      <p-footer>
+        <button class="button1" type="reset" (click)="lanzar=false">CANCELAR</button>
+        <button class="button1" type="reset" [disabled]="desactivar"
+          (click)="LanzarReq(ReqLanzar); desactivar=true">COTIZAR</button>
+      </p-footer>
+    </p-dialog>
+
+    <p-dialog header="Error" [(visible)]="modalFalse" [modal]="true" [style]="{width: '50vw'}">
+      <h4> Esta requisición NO tiene precios o cantidades para los productos</h4>
+      <p-footer>
+        <button class="button1" type="reset" (click)="modalFalse=false">Aceptar</button>
+      </p-footer>
+    </p-dialog>
+
+    <p-dialog header="Éxito" [(visible)]="exito" [modal]="true" [style]="{width: '50vw'}">
+      <h4> {{respuesta}}</h4>
+      <p-footer>
+        <button class="button1" type="reset" (click)="exito=false">Aceptar</button>
+      </p-footer>
+    </p-dialog>
+
+    <p-dialog header="error" [(visible)]="error" [modal]="true" [style]="{width: '50vw'}">
+      <h4> {{respuesta}}</h4>
+      <p-footer>
+        <button class="button1" type="reset" (click)="error=false" [style]="{width: '50vw'}">Aceptar</button>
+      </p-footer>
+    </p-dialog>
+
+    <p-dialog header="Confirmación Rechazo" [(visible)]="rechazo" [modal]="true" [style]="{width: '60vw'}">
+      <h4 style="text-align: center;">¿ Seguro que desea RECHAZAR la requisición número: {{ReqLanzar.idReq}} ?</h4>
+      <label>Motivo Rechazo:</label>
+          <input pInputText name="motivo" #motivo="ngModel" [(ngModel)]="ReqLanzar.comentario_comprador">
+      <p-progressSpinner *ngIf="cargando" class="load"></p-progressSpinner>
+      <p-footer>
+        <button class="button1" type="reset" (click)="rechazo=false">CANCELAR</button>
+        <button class="button1" type="reset" [disabled]="desactivar"
+          (click)="rechazarReq(ReqLanzar); desactivar=true">RECHAZAR</button>
+      </p-footer>
+    </p-dialog>
+
+    <p-dialog [style]="{width: '9vw'}" [(visible)]="cargando" [closable]="false" [showHeader]="false"
+      [resizable]="false" [draggable]="false" [keepInViewport]="false" [autoZIndex]="false" [modal]="true">
+      <p-progressSpinner class="load"></p-progressSpinner>
+    </p-dialog>
+
+  </div>

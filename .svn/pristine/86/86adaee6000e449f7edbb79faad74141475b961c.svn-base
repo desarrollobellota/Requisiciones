@@ -1,0 +1,143 @@
+import { Injectable } from '@angular/core';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
+import {Cadena} from '../../interface/cadena';
+import { SMLV } from 'src/app/interface/smlg';
+import { environment } from 'src/environments/environment';
+import { respuesta } from 'src/app/interface/respuesta';
+import { comprador } from 'src/app/interface/comprador';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class CadenaService {
+  public api = environment.urlBaseBD+'/webresources/entidad.cadenaaprobacion'; 
+  public sm =  environment.urlBaseBD+'/webresources/entidad.smlv';
+  public legalizacion = environment.urlBaseBD+'/webresources/entidad.cadenalegalizacion';
+ // public secuencia = environment.urlBaseBD+'/webresources/entidad.cadenaaprobacion/secuencia';
+  public lanzar = environment.urlBaseBD+'/webresources/entidad.cadenaaprobacion/lanzar';
+  public aprobarReq = environment.urlBaseBD+'/webresources/entidad.cadenaaprobacion/aprobar';
+  public rechazarReq = environment.urlBaseBD+'/webresources/entidad.cadenaaprobacion/rechazar';
+  public usuario = environment.urlBaseBD+'/webresources/entidad.cadenaaprobacion/aprobador';
+  public usuarioLega = environment.urlBaseBD+'/webresources/entidad.cadenalegalizacion/aprobador';
+  public compras = environment.urlBaseBD+'/webresources/entidad.comprador';
+ 
+  constructor(
+    private http: HttpClient
+  ) { }
+
+  getAllCadenas(){
+    const path = this.api;
+    return this.http.get<Cadena[]>(path);
+  }
+
+  getCadenaArea(area:string){
+    const path = `${this.api}?area=${area}`;
+    return this.http.get<Cadena[]>(path);
+  }
+
+  /**getSecuencia(area:string, usuario:string){
+    const path =  `${this.secuencia}/${area}/${usuario}`;
+    return this.http.get<Cadena[]>(path);
+  }*/
+
+  getUsuario(usuario:string){
+    const path =  `${this.usuario}/${usuario}`;
+    return this.http.get<Cadena[]>(path);
+  }
+
+  getUsuarioLega(usuario:string){
+    const path =  `${this.usuarioLega}/${usuario}`;
+    return this.http.get<Cadena[]>(path);
+  }
+
+  lanzarReq(idReq:number, usuario:string, correos:string){
+    console.log(idReq, usuario);
+    const path =  `${this.lanzar}/${idReq}`;
+    let headers = new HttpHeaders();
+    headers = headers.append("usuario", usuario);
+    headers = headers.append("correos", correos);
+    return this.http.put<respuesta>(path,null,{headers:headers});
+  }
+
+  rechazarRequ(idReq:number, usuario:string, correos:string, comentario:string){
+    console.log(idReq, usuario);
+    const path =  `${this.rechazarReq}/${idReq}`;
+    let headers = new HttpHeaders();
+    headers = headers.append("usuario", usuario);
+    headers = headers.append("correos", correos);
+    headers = headers.append("comentario", comentario);
+    return this.http.put<respuesta>(path,null,{headers:headers});
+  }
+
+  aprobarRequ(idReq:number, usuario:string, correos:string, tipo:String){
+    let path = "";
+    if(tipo=='Requisicion'){
+      path =  `${this.aprobarReq}/${idReq}`;
+    }else{
+      path =  `${this.legalizacion}/aprobarL/${idReq}`;
+    }
+    let headers = new HttpHeaders();
+    headers = headers.append("usuario", usuario);
+    headers = headers.append("correos", correos);
+    return this.http.put<respuesta>(path,null,{headers:headers});
+  }
+
+  aprobarLega(idReq:number, usuario:string, correos:string){
+    const path =  `${this.legalizacion}/aprobarL/${idReq}`;
+    let headers = new HttpHeaders();
+    headers = headers.append("usuario", usuario);
+    headers = headers.append("correos", correos);
+    return this.http.put<respuesta>(path,null,{headers:headers});
+  }
+
+  rechazarLega(idReq:number, usuario:string, correos:string){
+    console.log(idReq, usuario);
+    const path =  `${this.legalizacion}/rechazar/${idReq}`;
+    let headers = new HttpHeaders();
+    headers = headers.append("usuario", usuario);
+    headers = headers.append("correos", correos);
+    return this.http.put<Response>(path,null,{headers:headers});
+  }
+
+
+  estadoCadena(idCadena:number, estado:boolean){
+    console.log(estado);
+    const path = `${this.api}/estado/${idCadena}/${estado}`;
+    return this.http.get<Boolean>(path);
+  }
+
+  smlg(){
+    const path = this.sm;
+    return this.http.get<SMLV[]>(path);
+  }
+
+  updateSmlv(smlv:SMLV){
+    const path = this.sm;
+    return this.http.post<SMLV>(path, smlv);
+  }
+
+  updateCadena(cadena:Cadena){
+    const path = `${this.api}/${cadena.id}`;
+    return this.http.put<respuesta>(path,cadena)
+  }
+
+  nuevaCadena(cadena:Cadena){
+    const path = this.api;
+    return this.http.post<Cadena>(path, cadena);
+  }
+
+  nuevoComprador(comprador:comprador){
+    const path = this.compras;
+    return this.http.post<comprador>(path,comprador);
+  }
+
+  getCompradores(){
+    const path = this.compras;
+    return this.http.get<comprador[]>(path);
+  }
+
+  borrarComprador(idCompras:number){
+    const path = `${this.compras}/${idCompras}`;
+    return this.http.delete<comprador>(path);
+  }
+}

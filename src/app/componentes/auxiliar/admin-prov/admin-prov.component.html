@@ -1,0 +1,110 @@
+<div class="container">
+    <div class="card">
+    <h2 class="card-header text-center">Listado de proveedores</h2><br>
+  <h6 class="centro">La siguiente tabla muestra todos los proveedores existentes.<br>
+  Si desea añadir <strong>un nuevo proveedor</strong> seleccione el botón crear proveedor</h6><br>
+    <p-table #tabla [value]="proveedores" selectionMode="single" [(selection)]="provSelect" [paginator]="true" [rows]="5"  [responsive]="true"
+     [globalFilterFields]="['codProveedor','nombreProveedor', 'mail1']" [rowsPerPageOptions]="[10,25,50,100]" >
+        <ng-template pTemplate="caption">
+            <div style="text-align: right">        
+                <i class="pi pi-search" style="margin:4px 4px 0 0;"></i>
+                <input type="text" pInputText size="30" (input)="tabla.filterGlobal($event.target.value, 'contains')" style="width:auto">
+            </div>
+        </ng-template>
+        <ng-template pTemplate="header" >
+            <tr class="centro">
+                <th style="width: 10%;">Código</th>
+                <th>Nombre</th>
+                <th style="width: 30%;">Correo</th>
+                <th style="width: 10%;"></th>
+                <th style="width: 10%;"></th>
+
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body"  let-prov>
+            <tr class="centro">
+                <td><span class="ui-column-title">Código</span>
+                    {{prov.codProveedor}}</td>
+                <td><span class="ui-column-title">Nombre</span>
+                    {{prov.nombreProveedor}}</td>
+                <td><span class="ui-column-title">Correo</span>
+                    {{prov.mail1 }}</td>
+                <td><button type="button"  class="botonVer" (click)="ProveeSelect(prov)">Modificar</button></td>
+                <td><button type="button"  class="botonVer" (click)="eliminarProv(prov)">Eliminar</button></td>
+            </tr>
+        </ng-template>
+    </p-table><br>
+    <div class="estiloDiv">
+      <button type="submit" class="button1" (click)="crearProve=true;">Crear Proveedor</button><br> 
+    </div>
+    
+</div>
+<button class="button1" (click)="insetarprov()">Actualizar tabla</button>
+  </div>
+  <p-dialog header="Modificar correo" [(visible)]="updateCorreo" [responsive]="true" showEffect="fade" [modal]="true">
+    <div class="ui-fluid"  style="text-align: center;">
+      <p style="text-align: center;">Si desea añadir <strong>mas de un correo,</strong>  escribalos separados por punto y coma y SIN espacios.
+        <br>Ejemplo: prueba@gmail.com;bellota@hotmail.com<br></p>
+      <form #formPro="ngForm" class="card-body">
+        <div class="p-grid estiloDiv">
+          <div class="p-col-12">
+            <label for="ano">Nuevo Correo * 
+              <span *ngIf="!corr.valid && corr.touched" class="danger">Digite el nuevo correo</span>
+            </label><br>
+            <input type="text" name="corr" #corr="ngModel" [(ngModel)]="provSelect.mail1">
+          </div>
+        </div><br>
+       <br>
+      <div class="estiloDiv">
+        <button type="submit" class="button1" (click)="modificarProv(provSelect);updateCorreo=false;">Modificar</button>
+      </div><br>
+      </form>
+    </div>
+    </p-dialog>
+
+    <p-dialog header="Nuevo proveedor" [(visible)]="crearProve" [modal]="true" [style]="{width:'50vw'}" 
+    [maximizable]="true" [baseZIndex]="10000" [draggable]="true">
+      <div class="ui-fluid centro">
+        <form #formPro="ngForm" class="card-body">
+          <div class="p-grid estiloDiv">
+            <div class="p-col-12">
+              <label for="proveedor">Código  o nombre del proveedor * 
+                <span *ngIf="!prov.valid && prov.touched" class="danger">Seleccione el proveedor</span>
+              </label><br>
+              <p-autoComplete name="prov" #prov="ngModel" [(ngModel)]="proveedorSeleccionado" 
+                [suggestions]="nomProv" (completeMethod)="mostrarProveedores($event)" field="nombreProveedor" 
+                [size]="10" [minLength]="1">
+                <ng-template let-prov pTemplate="item">
+                  <div class="ui-helper-clearfix" class="EcbPov">
+                    <div>{{prov.codProveedor}}</div>  
+                    <div>{{prov.nombreProveedor}}</div>
+                  </div> 
+                </ng-template>        
+            </p-autoComplete>
+            </div>
+            <div class="p-col-12">
+              <label for="cor">Correo del proveedor * 
+                <span *ngIf="!corr.valid && corr.touched" class="danger">Digite el correo</span>
+              </label><br>
+              <input type="text" name="corr" #corr="ngModel" [(ngModel)]="provSelect.mail1">
+            </div>
+          </div><br>
+         <br>
+        <div class="estiloDiv">
+          <button type="submit" class="button1" (click)="crearProv(proveedorSeleccionado,provSelect);crearProve=false; formPro.reset()">Crear</button><br>
+        </div><br>
+        
+        </form>
+      </div>
+      </p-dialog>
+
+    <p-dialog  header="Proveedor nuevo" [(visible)]="crearprov" [modal]="true" [style]="{width:'50vw'}">
+      {{respuesta}}
+    </p-dialog>
+
+  <p-dialog [style]="{width: '10vw'}" [(visible)]="cargando" [closable]="false" [showHeader]="false" [resizable]="false"
+  [draggable]="false" [keepInViewport]="false" [autoZIndex]="false" [modal]="true"> 
+  <p-progressSpinner class="load"></p-progressSpinner></p-dialog>
+
+
+

@@ -1,0 +1,233 @@
+<div class="container">
+  <div  class="card">
+    <h3 class="card-header text-center">Mis requisiciones creadas</h3>
+    <div class="card-body">
+
+              <!--   TABLA PARA VISUALIZAR REQUISICIONES     -->
+    <div id="table" class="table-editable">
+    <p class="centro">En esta tabla puede consultar todas sus requisiciones, las acciones
+      varían según el estado de la requisición, por ejemplo, solo puede <strong>modificar</strong> una requisición
+      cuando fue rechazada por algún aprobador o cuando <strong>no</strong> ha sido cotizada por el área de compras.
+    </p>
+      <p-table #dt [value]="requisiciones" selectionMode="single" [paginator]="true" [rows]="10"  [responsive]="true"
+      [globalFilterFields]="['idReq','estado']" [rowsPerPageOptions]="[10,25,50,100]" >
+        <ng-template pTemplate="caption">
+          <div class="p-grid" >
+            <div class="p-col-12" style="text-align: right">        
+              <i class="pi pi-search" style="margin:4px 4px 0 0"></i>
+              <input type="text" pInputText size="30" (input)="dt.filterGlobal($event.target.value, 'contains')" style="width:auto">
+            </div>
+            </div>
+      </ng-template>
+        <ng-template pTemplate="header">
+              <tr class="centro">
+                  <th style="width: 10%;">Número Requisición</th>
+                  <th style="width: 10%;">Número Req LX</th>
+                  <th style="width: 15%;"> Número Orden Compra</th>
+                  <th style="width: 15%;">Fecha Creación</th>
+                  <th style="width: 15%;">Estado requisición</th>
+                  <th style="width: 15%;">Comentario Rechazo</th>
+                  <th>Acciones</th>
+              </tr> 
+          </ng-template>
+          <ng-template pTemplate="body"  let-requisiciones>
+              <tr class="centro">
+                  <td><span class="ui-column-title">IdReq</span>
+                    {{requisiciones.idReq}}</td>
+                    <td><span class="ui-column-title">IdReqLX</span>
+                      {{requisiciones.idReqLx}}</td>
+                    <td><span class="ui-column-title">IdOC</span>
+                      {{requisiciones.numeroOrdenCompra}}</td>
+                  <td><span class="ui-column-title">Fecha</span>
+                    {{requisiciones.fechaCreacion.toString().substring(0, 10)}}</td> 
+                  <td><span class="ui-column-title">Estado</span>
+                    {{requisiciones.estado}}</td>
+                    <td><span class="ui-column-title">Comentario</span>
+                      {{requisiciones.comentario_comprador}}</td>
+                  <td [ngSwitch]="requisiciones.estado"><span class="ui-column-title">Acciones</span>
+                    <span *ngSwitchCase="'aprobada'">
+                      <button type="button" size="sm" class="boton" (click)="open(requisiciones)">VER</button> 
+                    </span>
+
+                    <span *ngSwitchCase="'aprobada_sgt'">
+                      <button type="button" size="sm" class="boton" (click)="open(requisiciones)">VER</button> 
+                    </span>
+
+                    <span *ngSwitchCase="'cotizada'">
+                      <button type="button" size="sm" class="boton" (click)="open(requisiciones)">VER</button> 
+                    </span>
+                 
+                    <span *ngSwitchCase="'rechazada'" >
+                      <button type="button" size="sm" class="boton" (click)="open(requisiciones)" >VER</button>
+                      <button type="button" size="sm" class="boton" (click)="updateList(requisiciones)">MODIFICAR</button>
+                      <button type="button" size="sm" class="boton" (click)="remove(requisiciones)">ELIMINAR</button>
+                    </span>
+          
+                    <span *ngSwitchCase="'eliminada'">
+                      <button type="button" size="sm" class="boton" (click)="open(requisiciones)" >VER</button>
+                    </span>
+                 
+                    <span *ngSwitchCase="'pendiente'">
+                      <button type="button" size="sm" class="boton" (click)="open(requisiciones)" >VER</button>
+                      <button type="button" size="sm" class="boton"  [value]="requisiciones" (click)="updateList(requisiciones)">MODIFICAR</button>
+                      <button type="button" size="sm" class="boton" (click)="remove(requisiciones)">ELIMINAR</button>
+                    </span>
+
+                    <span *ngSwitchCase="'legalizar'">
+                      <button type="button" size="sm" class="boton" (click)="open(requisiciones)" >VER</button>
+                      <button type="button" size="sm" class="boton"  [value]="requisiciones" (click)="updateList(requisiciones)">MODIFICAR</button>
+                      <button type="button" size="sm" class="boton" (click)="remove(requisiciones)">ELIMINAR</button>
+                    </span>
+
+                    <span *ngSwitchCase="'Error'">
+                      <button type="button" size="sm" class="boton" (click)="open(requisiciones)" >VER</button>
+                      <button type="button" size="sm" class="boton"  [value]="requisiciones" (click)="updateList(requisiciones)">MODIFICAR</button>
+                      <button type="button" size="sm" class="boton" (click)="remove(requisiciones)">ELIMINAR</button>
+                    </span>
+                  </td>
+              </tr>
+          </ng-template>
+         
+      </p-table>
+
+    </div>
+    </div> 
+  </div>
+</div>
+              <!--   FORMULARIO PARA MODIFICAR REQUISICIONES     -->
+  <p-dialog header="Modificar requisicion" [(visible)]="dialogoConfirm" [responsive]="true" [modal]="true" [style]="{width: '80vw'}"
+  [maximizable]="true" [baseZIndex]="10000" [draggable]="false">
+  <h6 class="centro">Haga clic sobre el campo que desea modificar</h6>
+  <div class="ui-fluid">
+  <form #formRequisicion="ngForm" class="card-body">   
+    <div class="p-grid">
+      <div class="p-col-12 p-md-6 p-lg-4" style="text-align: center;">
+        <label for="prov">Proveedor: {{reqSelect.codProveedor}}</label><br>
+        <p-autoComplete name="prov" #prov="ngModel" [(ngModel)]="proveedorSeleccionado" [suggestions]="nomProv"
+           (completeMethod)="mostrarProveedores($event)" field="codProveedor" [size]="30" [minLength]="1">
+          <ng-template let-prov pTemplate="item">
+              <div class="ui-helper-clearfix EcbPov" >
+                <div class="prov">{{prov.codProveedor}}</div>  
+                <div class="prov">{{prov.nombreProveedor}}</div>
+              </div> 
+          </ng-template>
+        </p-autoComplete> 
+      </div>         
+    
+      <div class="p-col-12 p-md-6 p-lg-4" style="text-align: center;">
+        <label for="prov">Almacén: {{reqSelect.idAlmacen}}</label><br>
+        <p-autoComplete name="almacen" #almacen="ngModel" [(ngModel)]="alamcenSeleccionado" 
+          [suggestions]="buscarA" (completeMethod)="mostrarAlmacenes($event)" field="codigo" [size]="25" [minLength]="1">
+          <ng-template let-alm pTemplate="item" >
+            <div class="ui-helper-clearfix EcbPov">
+              <div class="prov">{{alm.idAlmacen}}</div>  
+              <div class="prov">{{alm.descripcion}}</div>
+            </div> 
+          </ng-template>
+        </p-autoComplete>
+      </div>
+    </div>
+      
+    <div class="p-grid">
+      <div class="p-col-12 p-md-6 p-lg-4" style="text-align: center;">
+        <label>Moneda: {{reqSelect.moneda}}</label><br>
+        <select class="ng-tns-c55-2 ui-inputtext ui-state-default ui-corner-all ui-autocomplete-input ng-start-inserted " id="moneda">
+          <option>Seleccione una moneda</option>
+          <option value="COP">COP</option>
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+        </select>
+      </div>
+
+      <div class="p-col-12 p-md-6 p-lg-4" style="text-align: center;">
+        <label for="prov">Área: {{reqSelect.idArea}}</label><br>
+        <p-autoComplete name="area" #area="ngModel" [(ngModel)]="reqSelect.idArea" 
+        [suggestions]="area" (completeMethod)="filtroArea($event)" [size]="25"> 
+          <ng-template let-alm pTemplate="item">
+            <div class="ui-helper-clearfix EcbPov">
+              <div class="prov">{{area}}</div>  
+            </div> 
+          </ng-template>
+        </p-autoComplete>
+      </div>
+  
+      <div class="p-col-12 p-md-6 p-lg-4" style="text-align: center;">
+        <label for="obs">Comentarios: </label><br>
+        <textarea pInputTextarea rows="1"  name="com" #com="ngModel" [(ngModel)]="reqSelect.comentario"></textarea>
+      </div>
+    </div>
+
+    <div class="p-grid">
+      <p-table #dt [value]="reqSelect.detalleReq" [responsive]="true" selectionMode="single" [paginator]="true" [rows]="3">
+        <ng-template pTemplate="header">
+              <tr class="centro"> 
+                  <th>Cod.Producto</th>
+                  <th>Cantidad</th>
+                  <th>Valor Und</th>
+                  <th>Fecha Solicitado</th>
+                  <th>Observaciones</th>
+              </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-req>    
+            <tr class="centro">
+                <td ><span class="ui-column-title">Cód Producto</span>
+                  <label> {{req.codProducto}}</label>
+                </td>
+                <td pEditableColumn><span class="ui-column-title">Cantidad</span>
+                  <label>{{req.cantidad}}</label>
+                  <p-cellEditor> 
+                    <ng-template pTemplate="input">
+                      <input name="can" #can="ngModel" [(ngModel)]="req.cantidad">
+                    </ng-template>
+                  </p-cellEditor>
+                </td>
+
+                <td pEditableColumn><span class="ui-column-title">ValorUnidad</span>
+                    <p-cellEditor> 
+                        <ng-template pTemplate="input">
+                          <input name="vlr" #vlr="ngModel" [(ngModel)]="req.valorUnidad">
+                        </ng-template>
+                    </p-cellEditor>
+                </td>
+
+                <td><span class="ui-column-title">Fecha</span>
+                      <p-calendar name='fec' #fec="ngModel" [(ngModel)]="req.fechaRequerido"></p-calendar>
+                </td>
+
+                <td pEditableColumn><span class="ui-column-title">Notas</span>
+                  <label>{{req.observacion}}</label>
+                  <p-cellEditor> 
+                    <ng-template pTemplate="input">
+                      <textarea name="cc" #cc="ngModel" [(ngModel)]="req.observacion"></textarea>
+                    </ng-template>
+                </p-cellEditor>
+                </td>
+    
+            </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </form> 
+  <p-footer>
+    <div class="ui-dialog-buttonpane ui-helper-clearfix">
+      <button type="button" class="boton" (click)="modificar(reqSelect, alamcenSeleccionado, proveedorSeleccionado)">Modificar</button>
+    </div>
+  </p-footer>
+  </div>
+    </p-dialog>
+
+              <!--   Confirmación de modificación     -->
+    <p-dialog header="Modificación exitosa" [(visible)]="modifico" [responsive]="true" [modal]="true" [style]="{width: '50vw'}"> 
+        Requisición modificada con éxito
+        <p-footer>
+          <button type="button" pButton icon="pi pi-times" (click)="modifico=false; dialogoConfirm=false" label="Cerrar" class="boton"></button>
+      </p-footer>
+    </p-dialog>
+
+    <p-dialog [style]="{width: '9vw'}" [(visible)]="cargando" [closable]="false" [showHeader]="false" [resizable]="false"
+   [draggable]="false" [keepInViewport]="false" [autoZIndex]="false" [modal]="true"> 
+   <p-progressSpinner class="load"></p-progressSpinner></p-dialog>
+
+
+  
+   
